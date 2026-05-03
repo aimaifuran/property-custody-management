@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Transfer Report</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="ptr">
+<div class="sidebar">
+    <h2>Supply Office</h2>
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="ris.html">📝 Requisition & Issue</a>
+    <a href="ics.html">📑 Inventory Custodian</a>
+    <a href="par.html">📘 Property Acknowledgement Receipt</a>
+    <a href="property-card.html">📁 Property Card</a>
+    <a href="iar.html">✅ Inspection & Acceptance Report</a>
+    <a href="ptr.html">🔁 Property Transfer Report</a>
+    <a href="prs.html">↩️ Property Return Slip</a>
+    <a href="returned-supply.html">🔄 Returned Supply</a>
+    <a href="user-management.html">👥 User Management</a>
+</div>
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1>Property Transfer Report</h1>
+    </div>
+    <section class="slip-dashboard">
+        <div class="dashboard-panel">
+            <button type="button" id="create-new-record" class="secondary">Create New Slip</button>
+            <div class="dashboard-stats">
+                <div class="stat-card"><span>Total Records</span><strong id="total-records">0</strong></div>
+                <div class="stat-card"><span>Recent Slip</span><strong id="recent-slip">-</strong></div>
+                <div class="stat-card"><span>Status</span><strong id="current-status">Ready</strong></div>
+            </div>
+        </div>
+        <div class="dashboard-table">
+            <h3>Slip Dashboard</h3>
+            <div class="table-wrapper">
+                <table id="records-table" class="dynamic-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    <section id="record-preview-section" class="record-preview" style="display:none;">
+        <h3>Document Preview</h3>
+        <div id="record-preview"></div>
+    </section>
+    <section>
+        <form id="record-form">
+            <div class="form-grid">
+                <div>
+                    <label for="entity-name">Entity Name</label>
+                    <input id="entity-name" type="text" required>
+                </div>
+                <div>
+                    <label for="fund-cluster">Fund Cluster</label>
+                    <input id="fund-cluster" type="text">
+                </div>
+                <div>
+                    <label for="ptr-no">PTR No.</label>
+                    <input id="ptr-no" type="text" required>
+                </div>
+                <div>
+                    <label for="date">Date</label>
+                    <input id="date" type="date">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div>
+                    <label for="from-accountable-officer">From Accountable Officer/Agency/Fund Cluster</label>
+                    <input id="from-accountable-officer" type="text">
+                </div>
+                <div>
+                    <label for="to-accountable-officer">To Accountable Officer/Agency/Fund Cluster</label>
+                    <input id="to-accountable-officer" type="text">
+                </div>
+                <div>
+                    <label for="transfer-type">Transfer Type</label>
+                    <select id="transfer-type">
+                        <option>Donation</option>
+                        <option>Reassignment</option>
+                        <option>Relocate</option>
+                        <option>Others</option>
+                    </select>
+                </div>
+            </div>
+            <h3>Item Details</h3>
+            <button type="button" id="add-row" class="secondary">Add Row</button>
+            <div class="table-wrapper">
+                <table id="detail-table" class="dynamic-table">
+                    <thead>
+                        <tr>
+                            <th>Date Acquired</th>
+                            <th>Property No.</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Condition of PPE</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="form-grid">
+                <div>
+                    <label for="remarks">Remarks</label>
+                    <input id="remarks" type="text">
+                </div>
+                <div>
+                    <label for="reason-for-transfer">Reason for Transfer</label>
+                    <input id="reason-for-transfer" type="text">
+                </div>
+            </div>
+            <h3>Approval and Signatures</h3>
+            <div class="form-grid">
+                <div>
+                    <label for="approved-by-signature">Approved by Signature</label>
+                    <input id="approved-by-signature" type="text">
+                </div>
+                <div>
+                    <label for="approved-by-name">Name</label>
+                    <input id="approved-by-name" type="text">
+                </div>
+                <div>
+                    <label for="approved-by-designation">Designation</label>
+                    <input id="approved-by-designation" type="text">
+                </div>
+                <div>
+                    <label for="approved-by-date">Date</label>
+                    <input id="approved-by-date" type="date">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div>
+                    <label for="released-by">Released/Issued by</label>
+                    <input id="released-by" type="text">
+                </div>
+                <div>
+                    <label for="received-by">Received by</label>
+                    <input id="received-by" type="text">
+                </div>
+            </div>
+            <div class="button-row">
+                <button type="submit">Save PTR</button>
+                <button type="button" id="clear-form">Clear Form</button>
+            </div>
+        </form>
+    </section>
+</div>
+<script src="js/formPages.js"></script>
+</body>
+</html>

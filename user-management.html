@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="sidebar">
+    <h2>Supply Office</h2>
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="ris.html">📝 Requisition & Issue</a>
+    <a href="ics.html">📑 Inventory Custodian</a>
+    <a href="par.html">📘 Property Acknowledgement Receipt</a>
+    <a href="property-card.html">📁 Property Card</a>
+    <a href="iar.html">✅ Inspection & Acceptance Report</a>
+    <a href="ptr.html">🔁 Property Transfer Report</a>
+    <a href="prs.html">↩️ Property Return Slip</a>
+    <a href="returned-supply.html">🔄 Returned Supply</a>
+    <a href="user-management.html">👥 User Management</a>
+</div>
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1>User Management</h1>
+    </div>
+    <section>
+        <h3>Add New User</h3>
+        <form id="user-form">
+            <div class="form-grid">
+                <div>
+                    <label for="user-name">Name</label>
+                    <input id="user-name" type="text" required>
+                </div>
+                <div>
+                    <label for="user-email">Email</label>
+                    <input id="user-email" type="email" required>
+                </div>
+                <div>
+                    <label for="user-role">Role</label>
+                    <select id="user-role" required>
+                        <option>Admin</option>
+                        <option>Supply Officer</option>
+                        <option>Property Custodian</option>
+                        <option>User</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="user-department">Department</label>
+                    <input id="user-department" type="text">
+                </div>
+            </div>
+            <div class="button-row">
+                <button type="submit">Add User</button>
+            </div>
+        </form>
+    </section>
+    <section>
+        <h3>Users List</h3>
+        <div id="users-list" class="records-list"></div>
+    </section>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const userForm = document.getElementById('user-form');
+    const usersList = document.getElementById('users-list');
+
+    function loadUsers() {
+        usersList.innerHTML = '';
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        if (users.length === 0) {
+            usersList.innerHTML = '<p class="empty-state">No users added yet.</p>';
+            return;
+        }
+        users.forEach((user, index) => {
+            const card = document.createElement('div');
+            card.className = 'record-card';
+            card.innerHTML = `
+                <div class="card-summary">
+                    <strong>${user.name} (${user.role})</strong>
+                    <span>${user.email}</span>
+                </div>
+                <div class="card-meta">
+                    <button type="button" onclick="editUser(${index})">Edit</button>
+                    <button type="button" onclick="deleteUser(${index})">Delete</button>
+                </div>
+            `;
+            usersList.appendChild(card);
+        });
+    }
+
+    userForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('user-name').value.trim();
+        const email = document.getElementById('user-email').value.trim();
+        const role = document.getElementById('user-role').value;
+        const department = document.getElementById('user-department').value.trim();
+
+        if (!name || !email) {
+            alert('Name and Email are required.');
+            return;
+        }
+
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        users.push({ name, email, role, department, createdAt: new Date().toISOString() });
+        localStorage.setItem('users', JSON.stringify(users));
+        userForm.reset();
+        loadUsers();
+        alert('User added successfully.');
+    });
+
+    window.editUser = (index) => {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const user = users[index];
+        document.getElementById('user-name').value = user.name;
+        document.getElementById('user-email').value = user.email;
+        document.getElementById('user-role').value = user.role;
+        document.getElementById('user-department').value = user.department;
+        // For simplicity, edit by replacing
+        users.splice(index, 1);
+        localStorage.setItem('users', JSON.stringify(users));
+    };
+
+    window.deleteUser = (index) => {
+        if (confirm('Delete this user?')) {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            users.splice(index, 1);
+            localStorage.setItem('users', JSON.stringify(users));
+            loadUsers();
+        }
+    };
+
+    loadUsers();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Custodian Slip</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="ics">
+<div class="sidebar">
+    <h2>Supply Office</h2>
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="ris.html">📝 Requisition & Issue</a>
+    <a href="ics.html">📑 Inventory Custodian</a>
+    <a href="par.html">📘 Property Acknowledgement Receipt</a>
+    <a href="property-card.html">📁 Property Card</a>
+    <a href="iar.html">✅ Inspection & Acceptance Report</a>
+    <a href="ptr.html">🔁 Property Transfer Report</a>
+    <a href="prs.html">↩️ Property Return Slip</a>
+    <a href="returned-supply.html">🔄 Returned Supply</a>
+    <a href="user-management.html">👥 User Management</a>
+</div>
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1>Inventory Custodian Slip</h1>
+    </div>
+    <section class="slip-dashboard">
+        <div class="dashboard-panel">
+            <button type="button" id="create-new-record" class="secondary">Create New Slip</button>
+            <div class="dashboard-stats">
+                <div class="stat-card"><span>Total Records</span><strong id="total-records">0</strong></div>
+                <div class="stat-card"><span>Recent Slip</span><strong id="recent-slip">-</strong></div>
+                <div class="stat-card"><span>Status</span><strong id="current-status">Ready</strong></div>
+            </div>
+        </div>
+        <div class="dashboard-table">
+            <h3>Slip Dashboard</h3>
+            <div class="table-wrapper">
+                <table id="records-table" class="dynamic-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    <section id="record-preview-section" class="record-preview" style="display:none;">
+        <h3>Document Preview</h3>
+        <div id="record-preview"></div>
+    </section>
+    <section>
+        <form id="record-form">
+            <div class="form-grid">
+                <div>
+                    <label for="entity-name">Entity Name</label>
+                    <input id="entity-name" type="text" required>
+                </div>
+                <div>
+                    <label for="fund-cluster">Fund Cluster</label>
+                    <input id="fund-cluster" type="text">
+                </div>
+                <div>
+                    <label for="ics-no">ICS No.</label>
+                    <input id="ics-no" type="text" required>
+                </div>
+            </div>
+            <h3>Item Details</h3>
+            <button type="button" id="add-row" class="secondary">Add Row</button>
+            <div class="table-wrapper">
+                <table id="detail-table" class="dynamic-table">
+                    <thead>
+                        <tr>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Unit Cost</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                            <th>Inventory Item No.</th>
+                            <th>Estimated Useful Life</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="form-grid">
+                <div class="total-panel">
+                    <strong>Total</strong>
+                    <span id="total-amount">0.00</span>
+                </div>
+                <div>
+                    <label for="remarks">Remarks</label>
+                    <input id="remarks" type="text">
+                </div>
+            </div>
+            <h3>Received From</h3>
+            <div class="form-grid">
+                <div>
+                    <label for="received-from-signature">Signature</label>
+                    <input id="received-from-signature" type="text">
+                </div>
+                <div>
+                    <label for="received-from-name">Name</label>
+                    <input id="received-from-name" type="text">
+                </div>
+                <div>
+                    <label for="received-from-position">Position/Office</label>
+                    <input id="received-from-position" type="text">
+                </div>
+                <div>
+                    <label for="received-from-date">Date</label>
+                    <input id="received-from-date" type="date">
+                </div>
+            </div>
+            <h3>Received By</h3>
+            <div class="form-grid">
+                <div>
+                    <label for="received-by-signature">Signature</label>
+                    <input id="received-by-signature" type="text">
+                </div>
+                <div>
+                    <label for="received-by-name">Name</label>
+                    <input id="received-by-name" type="text">
+                </div>
+                <div>
+                    <label for="received-by-position">Position/Office</label>
+                    <input id="received-by-position" type="text">
+                </div>
+                <div>
+                    <label for="received-by-date">Date</label>
+                    <input id="received-by-date" type="date">
+                </div>
+            </div>
+            <div class="button-row">
+                <button type="submit">Save ICS</button>
+                <button type="button" id="clear-form">Clear Form</button>
+            </div>
+        </form>
+    </section>
+</div>
+<script src="js/formPages.js"></script>
+</body>
+</html>

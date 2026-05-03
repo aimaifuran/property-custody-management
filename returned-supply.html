@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Returned Supply</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="sidebar">
+    <h2>Supply Office</h2>
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="ris.html">📝 Requisition & Issue</a>
+    <a href="ics.html">📑 Inventory Custodian</a>
+    <a href="par.html">📘 Property Acknowledgement Receipt</a>
+    <a href="property-card.html">📁 Property Card</a>
+    <a href="iar.html">✅ Inspection & Acceptance Report</a>
+    <a href="ptr.html">🔁 Property Transfer Report</a>
+    <a href="prs.html">↩️ Property Return Slip</a>
+    <a href="returned-supply.html">🔄 Returned Supply</a>
+    <a href="user-management.html">👥 User Management</a>
+</div>
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1>Returned Supply</h1>
+    </div>
+    <section>
+        <p>This page displays returned supplies from Property Return Slips (PRS).</p>
+        <div id="returned-list" class="records-list"></div>
+    </section>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const returnedList = document.getElementById('returned-list');
+    const prsRecords = JSON.parse(localStorage.getItem('prs_records') || '[]');
+    
+    if (prsRecords.length === 0) {
+        returnedList.innerHTML = '<p class="empty-state">No returned supplies found.</p>';
+        return;
+    }
+
+    prsRecords.forEach(record => {
+        const card = document.createElement('div');
+        card.className = 'record-card';
+        const title = `PRS - ${record['entity-name']} - ${record['purpose']}`;
+        card.innerHTML = `
+            <div class="card-summary">
+                <strong>${title}</strong>
+                <span>${new Date(record.createdAt).toLocaleString()}</span>
+            </div>
+            <div class="card-meta">
+                <button type="button" class="view-record" onclick="alert('View details for ${title}')">View</button>
+            </div>
+        `;
+        returnedList.appendChild(card);
+    });
+});
+</script>
+</body>
+</html>

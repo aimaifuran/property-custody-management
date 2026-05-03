@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Card</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="property-card">
+<div class="sidebar">
+    <h2>Supply Office</h2>
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="ris.html">📝 Requisition & Issue</a>
+    <a href="ics.html">📑 Inventory Custodian</a>
+    <a href="par.html">📘 Property Acknowledgement Receipt</a>
+    <a href="property-card.html">📁 Property Card</a>
+    <a href="iar.html">✅ Inspection & Acceptance Report</a>
+    <a href="ptr.html">🔁 Property Transfer Report</a>
+    <a href="prs.html">↩️ Property Return Slip</a>
+    <a href="returned-supply.html">🔄 Returned Supply</a>
+    <a href="user-management.html">👥 User Management</a>
+</div>
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1>Property Card</h1>
+    </div>
+    <section class="slip-dashboard">
+        <div class="dashboard-panel">
+            <button type="button" id="create-new-record" class="secondary">Create New Slip</button>
+            <div class="dashboard-stats">
+                <div class="stat-card"><span>Total Records</span><strong id="total-records">0</strong></div>
+                <div class="stat-card"><span>Recent Slip</span><strong id="recent-slip">-</strong></div>
+                <div class="stat-card"><span>Status</span><strong id="current-status">Ready</strong></div>
+            </div>
+        </div>
+        <div class="dashboard-table">
+            <h3>Slip Dashboard</h3>
+            <div class="table-wrapper">
+                <table id="records-table" class="dynamic-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    <section id="record-preview-section" class="record-preview" style="display:none;">
+        <h3>Document Preview</h3>
+        <div id="record-preview"></div>
+    </section>
+    <section>
+        <form id="record-form">
+            <div class="form-grid">
+                <div>
+                    <label for="po-no">PO No.</label>
+                    <input id="po-no" type="text" required>
+                </div>
+                <div>
+                    <label for="month">Month</label>
+                    <input id="month" type="text" placeholder="e.g. January">
+                </div>
+                <div>
+                    <label for="entity-name">Entity Name</label>
+                    <input id="entity-name" type="text" required>
+                </div>
+                <div>
+                    <label for="property-plant-equipment">Property, Plant and Equipment</label>
+                    <input id="property-plant-equipment" type="text">
+                </div>
+                <div>
+                    <label for="description">Description</label>
+                    <input id="description" type="text">
+                </div>
+                <div>
+                    <label for="fund-cluster">Fund Cluster</label>
+                    <input id="fund-cluster" type="text">
+                </div>
+                <div>
+                    <label for="property-number">Property Number</label>
+                    <input id="property-number" type="text">
+                </div>
+            </div>
+            <h3>Card Movements</h3>
+            <button type="button" id="add-row" class="secondary">Add Row</button>
+            <div class="table-wrapper">
+                <table id="detail-table" class="dynamic-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reference PAR No.</th>
+                            <th>Receipt Qty</th>
+                            <th>Issue/Transfer/Disposal Qty</th>
+                            <th>Balance Qty</th>
+                            <th>Serial Number / Amount</th>
+                            <th>Remarks</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="button-row">
+                <button type="submit">Save Property Card</button>
+                <button type="button" id="clear-form">Clear Form</button>
+            </div>
+        </form>
+    </section>
+</div>
+<script src="js/formPages.js"></script>
+</body>
+</html>

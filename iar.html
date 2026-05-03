@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection and Acceptance Report</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="iar">
+<div class="sidebar">
+    <h2>Supply Office</h2>
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="ris.html">📝 Requisition & Issue</a>
+    <a href="ics.html">📑 Inventory Custodian</a>
+    <a href="par.html">📘 Property Acknowledgement Receipt</a>
+    <a href="property-card.html">📁 Property Card</a>
+    <a href="iar.html">✅ Inspection & Acceptance Report</a>
+    <a href="ptr.html">🔁 Property Transfer Report</a>
+    <a href="prs.html">↩️ Property Return Slip</a>
+    <a href="returned-supply.html">🔄 Returned Supply</a>
+    <a href="user-management.html">👥 User Management</a>
+</div>
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1>Inspection and Acceptance Report</h1>
+    </div>
+    <section class="slip-dashboard">
+        <div class="dashboard-panel">
+            <button type="button" id="create-new-record" class="secondary">Create New Slip</button>
+            <div class="dashboard-stats">
+                <div class="stat-card"><span>Total Records</span><strong id="total-records">0</strong></div>
+                <div class="stat-card"><span>Recent Slip</span><strong id="recent-slip">-</strong></div>
+                <div class="stat-card"><span>Status</span><strong id="current-status">Ready</strong></div>
+            </div>
+        </div>
+        <div class="dashboard-table">
+            <h3>Slip Dashboard</h3>
+            <div class="table-wrapper">
+                <table id="records-table" class="dynamic-table">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    <section id="record-preview-section" class="record-preview" style="display:none;">
+        <h3>Document Preview</h3>
+        <div id="record-preview"></div>
+    </section>
+    <section>
+        <form id="record-form">
+            <div class="form-grid">
+                <div>
+                    <label for="entity-name">Entity Name</label>
+                    <input id="entity-name" type="text" required>
+                </div>
+                <div>
+                    <label for="fund-cluster">Fund Cluster</label>
+                    <input id="fund-cluster" type="text">
+                </div>
+                <div>
+                    <label for="supplier">Supplier</label>
+                    <input id="supplier" type="text">
+                </div>
+                <div>
+                    <label for="po-jo-no-date">PO/JO No./Date</label>
+                    <input id="po-jo-no-date" type="text">
+                </div>
+                <div>
+                    <label for="responsibility-center-code">Responsibility Center Code</label>
+                    <input id="responsibility-center-code" type="text">
+                </div>
+            </div>
+            <h3>Inspection Items</h3>
+            <button type="button" id="add-row" class="secondary">Add Row</button>
+            <div class="table-wrapper">
+                <table id="detail-table" class="dynamic-table">
+                    <thead>
+                        <tr>
+                            <th>Stock/Property No.</th>
+                            <th>Description</th>
+                            <th>Unit</th>
+                            <th>Quantity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="form-grid">
+                <div>
+                    <label for="inspection-date">Inspection Date</label>
+                    <input id="inspection-date" type="date">
+                </div>
+                <div>
+                    <label for="inspection-signature">Signature of Inspection Officer/Committee</label>
+                    <input id="inspection-signature" type="text">
+                </div>
+                <div>
+                    <label for="acceptance-date">Acceptance Date</label>
+                    <input id="acceptance-date" type="date">
+                </div>
+                <div>
+                    <label for="acceptance-signature">Signature of Supply/Property Custodian</label>
+                    <input id="acceptance-signature" type="text">
+                </div>
+                <div>
+                    <label for="status">Status</label>
+                    <select id="status">
+                        <option>Complete</option>
+                        <option>Partial</option>
+                    </select>
+                </div>
+            </div>
+            <div class="button-row">
+                <button type="submit">Save IAR</button>
+                <button type="button" id="clear-form">Clear Form</button>
+            </div>
+        </form>
+    </section>
+</div>
+<script src="js/formPages.js"></script>
+</body>
+</html>
