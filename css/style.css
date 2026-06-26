@@ -37,6 +37,10 @@ body {
     overflow-x: hidden;
 }
 
+.sidebar-toggle {
+    display: none;
+}
+
 img,
 svg,
 video,
@@ -627,9 +631,60 @@ button.danger:hover,
 }
 
 @media (max-width: 760px) {
+    body {
+        padding-top: 64px;
+    }
+
+    .sidebar-toggle {
+        width: 44px;
+        height: 44px;
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 1001;
+        display: grid;
+        place-items: center;
+        gap: 4px;
+        padding: 10px;
+        background: var(--button);
+        border: 1px solid #aab5cb;
+        border-radius: 6px;
+        box-shadow: 0 3px 0 rgba(45,55,72,0.28);
+    }
+
+    .sidebar-toggle span {
+        width: 22px;
+        height: 3px;
+        display: block;
+        background: #1b2434;
+        border-radius: 999px;
+    }
+
     .sidebar {
+        width: min(310px, calc(100vw - 24px));
+        max-height: calc(100vh - 24px);
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 1000;
         grid-template-columns: 1fr;
         gap: 10px;
+        margin: 0;
+        padding: 68px 18px 18px;
+        transform: translateX(calc(-100% - 24px));
+        transition: transform 180ms ease;
+    }
+
+    body.sidebar-open .sidebar {
+        transform: translateX(0);
+    }
+
+    body.sidebar-open::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        background: rgba(18, 23, 34, 0.32);
     }
 
     .sidebar a {
@@ -672,8 +727,8 @@ button.danger:hover,
 
 @media (max-width: 640px) {
     .sidebar {
-        margin: 10px;
-        padding: 18px;
+        margin: 0;
+        padding: 68px 16px 16px;
         border-radius: 8px;
     }
 
@@ -748,13 +803,15 @@ button.danger:hover,
 }
 
 @media (max-width: 420px) {
-    .sidebar,
     .main-content {
         margin: 8px;
     }
 
     .sidebar {
-        padding: 14px;
+        width: calc(100vw - 20px);
+        top: 10px;
+        left: 10px;
+        padding: 64px 14px 14px;
     }
 
     .main-content {

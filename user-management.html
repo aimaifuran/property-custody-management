@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<button class="sidebar-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
 <div class="sidebar">
     <h2>Supply Office</h2>
     <a href="index.html">🏠 Dashboard</a>
@@ -77,6 +82,7 @@
         <div id="admin-records-list" class="records-list"></div>
     </section>
 </div>
+<script src="js/navigation.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const userForm = document.getElementById('user-form');
