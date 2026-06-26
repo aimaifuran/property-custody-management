@@ -22,10 +22,11 @@
 </div>
 <div class="main-content">
     <div class="dashboard-header">
+        <div class="form-logo">MC</div>
         <h1>User Management</h1>
     </div>
     <section>
-        <h3>Add New User</h3>
+        <h3 id="user-form-title">Add New User</h3>
         <form id="user-form">
             <div class="form-grid">
                 <div>
@@ -50,24 +51,154 @@
                     <input id="user-department" type="text">
                 </div>
             </div>
+            <h3>Form Access</h3>
+            <div id="form-access-list" class="access-grid"></div>
             <div class="button-row">
-                <button type="submit">Add User</button>
+                <button type="submit" id="save-user">Add User</button>
+                <button type="button" id="cancel-user-edit" class="secondary" style="display:none;">Cancel Edit</button>
             </div>
         </form>
     </section>
     <section>
+        <h3>Active Account</h3>
+        <div class="form-grid">
+            <div>
+                <label for="active-user">Use dashboard as</label>
+                <select id="active-user"></select>
+            </div>
+        </div>
+    </section>
+    <section>
         <h3>Users List</h3>
         <div id="users-list" class="records-list"></div>
+    </section>
+    <section>
+        <h3>All Saved Records</h3>
+        <div id="admin-records-list" class="records-list"></div>
     </section>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const userForm = document.getElementById('user-form');
     const usersList = document.getElementById('users-list');
+    const formAccessList = document.getElementById('form-access-list');
+    const activeUserSelect = document.getElementById('active-user');
+    const adminRecordsList = document.getElementById('admin-records-list');
+    const formTitle = document.getElementById('user-form-title');
+    const saveButton = document.getElementById('save-user');
+    const cancelEditButton = document.getElementById('cancel-user-edit');
+    let editingIndex = null;
+
+    const formOptions = {
+        ris: {label: 'Requisition & Issue Slip', storageKey: 'ris_records'},
+        ics: {label: 'Inventory Custodian Slip', storageKey: 'ics_records'},
+        par: {label: 'Property Acknowledgement Receipt', storageKey: 'par_records'},
+        'property-card': {label: 'Property Card', storageKey: 'property_card_records'},
+        iar: {label: 'Inspection & Acceptance Report', storageKey: 'iar_records'},
+        ptr: {label: 'Property Transfer Report', storageKey: 'ptr_records'},
+        prs: {label: 'Property Return Slip', storageKey: 'prs_records'}
+    };
+
+    function getEditIndexFromUrl() {
+        const value = new URLSearchParams(window.location.search).get('edit');
+        const index = parseInt(value, 10);
+        return Number.isNaN(index) ? null : index;
+    }
+
+    function openUserEditPage(index) {
+        window.location.href = `${window.location.pathname}?edit=${index}`;
+    }
+
+    function openUserDashboard() {
+        window.location.href = window.location.pathname;
+    }
+
+    function getUsers() {
+        return JSON.parse(localStorage.getItem('users') || '[]');
+    }
+
+    function saveUsers(users) {
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    function getSelectedForms() {
+        return Array.from(formAccessList.querySelectorAll('input[type="checkbox"]:checked')).map(input => input.value);
+    }
+
+    function setSelectedForms(allowedForms = []) {
+        formAccessList.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.checked = allowedForms.includes(input.value);
+        });
+    }
+
+    function renderFormAccessOptions() {
+        formAccessList.innerHTML = Object.keys(formOptions).map(key => `
+            <label class="access-option">
+                <input type="checkbox" value="${key}">
+                <span>${formOptions[key].label}</span>
+            </label>
+        `).join('');
+    }
+
+    function updateAccessByRole() {
+        const isAdmin = document.getElementById('user-role').value === 'Admin';
+        formAccessList.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.checked = isAdmin ? true : input.checked;
+            input.disabled = isAdmin;
+        });
+    }
+
+    function resetUserForm() {
+        userForm.reset();
+        setSelectedForms([]);
+        updateAccessByRole();
+        editingIndex = null;
+        formTitle.textContent = 'Add New User';
+        saveButton.textContent = 'Add User';
+        cancelEditButton.style.display = 'none';
+    }
+
+    function loadActiveUserOptions() {
+        const users = getUsers();
+        const activeEmail = localStorage.getItem('active_user_email') || '';
+        activeUserSelect.innerHTML = '<option value="">Administrator</option>';
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.email;
+            option.textContent = `${user.name} - ${user.role}`;
+            if (user.email === activeEmail) option.selected = true;
+            activeUserSelect.appendChild(option);
+        });
+    }
+
+    function loadAdminRecords() {
+        adminRecordsList.innerHTML = '';
+        const blocks = [];
+        Object.keys(formOptions).forEach(key => {
+            const form = formOptions[key];
+            const records = JSON.parse(localStorage.getItem(form.storageKey) || '[]');
+            blocks.push(`
+                <div class="record-card">
+                    <div class="card-summary">
+                        <strong>${form.label}</strong>
+                        <span>${records.length} ${records.length === 1 ? 'record' : 'records'}</span>
+                    </div>
+                    <div class="record-details">
+                        ${records.length ? records.slice(0, 5).map(record => {
+                            const title = record[Object.keys(record).find(field => field.endsWith('-no'))] || record['entity-name'] || record.purpose || 'Saved record';
+                            const date = record.date || record['inspection-date'] || record.createdAt || '-';
+                            return `<div><strong>${title}</strong> <span>${date}</span></div>`;
+                        }).join('') : '<span class="empty-state">No records yet.</span>'}
+                    </div>
+                </div>
+            `);
+        });
+        adminRecordsList.innerHTML = blocks.join('');
+    }
 
     function loadUsers() {
         usersList.innerHTML = '';
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const users = getUsers();
         if (users.length === 0) {
             usersList.innerHTML = '<p class="empty-state">No users added yet.</p>';
             return;
@@ -80,9 +211,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <strong>${user.name} (${user.role})</strong>
                     <span>${user.email}</span>
                 </div>
+                <div class="record-details">
+                    <strong>Department:</strong> ${user.department || '-'}<br>
+                    <strong>Form Access:</strong> ${user.role === 'Admin' ? 'All forms' : (user.allowedForms || []).map(key => formOptions[key]?.label).filter(Boolean).join(', ') || 'No forms assigned'}
+                </div>
                 <div class="card-meta">
                     <button type="button" onclick="editUser(${index})">Edit</button>
-                    <button type="button" onclick="deleteUser(${index})">Delete</button>
+                    <button type="button" class="danger" onclick="deleteUser(${index})">Delete</button>
                 </div>
             `;
             usersList.appendChild(card);
@@ -95,42 +230,95 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('user-email').value.trim();
         const role = document.getElementById('user-role').value;
         const department = document.getElementById('user-department').value.trim();
+        const allowedForms = role === 'Admin' ? Object.keys(formOptions) : getSelectedForms();
 
         if (!name || !email) {
             alert('Name and Email are required.');
             return;
         }
 
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        users.push({ name, email, role, department, createdAt: new Date().toISOString() });
-        localStorage.setItem('users', JSON.stringify(users));
-        userForm.reset();
+        if (role !== 'Admin' && allowedForms.length === 0) {
+            alert('Please select at least one form this user can access.');
+            return;
+        }
+
+        const users = getUsers();
+        if (editingIndex !== null) {
+            users[editingIndex] = {
+                ...users[editingIndex],
+                name,
+                email,
+                role,
+                department,
+                allowedForms,
+                updatedAt: new Date().toISOString()
+            };
+            saveUsers(users);
+            alert('User updated successfully.');
+            openUserDashboard();
+            return;
+        }
+
+        users.push({ name, email, role, department, allowedForms, createdAt: new Date().toISOString() });
+        saveUsers(users);
+        resetUserForm();
         loadUsers();
+        loadActiveUserOptions();
         alert('User added successfully.');
     });
 
     window.editUser = (index) => {
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        openUserEditPage(index);
+    };
+
+    function loadUserForEdit(index) {
+        const users = getUsers();
         const user = users[index];
+        if (!user) {
+            openUserDashboard();
+            return;
+        }
         document.getElementById('user-name').value = user.name;
         document.getElementById('user-email').value = user.email;
         document.getElementById('user-role').value = user.role;
-        document.getElementById('user-department').value = user.department;
-        // For simplicity, edit by replacing
-        users.splice(index, 1);
-        localStorage.setItem('users', JSON.stringify(users));
-    };
+        document.getElementById('user-department').value = user.department || '';
+        setSelectedForms(user.allowedForms || []);
+        updateAccessByRole();
+        editingIndex = index;
+        formTitle.textContent = 'Edit User';
+        saveButton.textContent = 'Update User';
+        cancelEditButton.style.display = 'inline-block';
+    }
 
     window.deleteUser = (index) => {
         if (confirm('Delete this user?')) {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const users = getUsers();
             users.splice(index, 1);
-            localStorage.setItem('users', JSON.stringify(users));
+            saveUsers(users);
+            if (editingIndex === index) {
+                resetUserForm();
+            } else if (editingIndex !== null && editingIndex > index) {
+                editingIndex -= 1;
+            }
             loadUsers();
+            loadActiveUserOptions();
         }
     };
 
+    cancelEditButton.addEventListener('click', openUserDashboard);
+    document.getElementById('user-role').addEventListener('change', updateAccessByRole);
+    activeUserSelect.addEventListener('change', () => {
+        localStorage.setItem('active_user_email', activeUserSelect.value);
+        alert('Active account updated. The dashboard will now show that account access.');
+    });
+
+    renderFormAccessOptions();
+    updateAccessByRole();
     loadUsers();
+    loadActiveUserOptions();
+    loadAdminRecords();
+    const editIndex = getEditIndexFromUrl();
+    if (editIndex !== null) loadUserForEdit(editIndex);
 });
 </script>
 </body>

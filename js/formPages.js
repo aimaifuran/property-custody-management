@@ -4,6 +4,7 @@ const PAGE_CONFIG = {
         title: 'Requisition and Issue Slip',
         saveLabel: 'Save RIS',
         summaryFields: ['ris-no', 'entity-name', 'date'],
+        dashboardFields: ['date', 'ris-no', 'entity-name', 'office', 'purpose'],
         rowFields: [
             {name: 'stock-no', label: 'Stock No.', type: 'text'},
             {name: 'unit', label: 'Unit', type: 'text'},
@@ -19,6 +20,7 @@ const PAGE_CONFIG = {
         title: 'Inventory Custodian Slip',
         saveLabel: 'Save ICS',
         summaryFields: ['ics-no', 'entity-name', 'fund-cluster'],
+        dashboardFields: ['ics-no', 'entity-name', 'fund-cluster', 'received-by-name'],
         rowFields: [
             {name: 'quantity', label: 'Quantity', type: 'number'},
             {name: 'unit', label: 'Unit', type: 'text'},
@@ -34,6 +36,7 @@ const PAGE_CONFIG = {
         title: 'Property Acknowledgement Receipt',
         saveLabel: 'Save PAR',
         summaryFields: ['par-no', 'entity-name', 'fund-cluster'],
+        dashboardFields: ['par-no', 'entity-name', 'fund-cluster', 'received-by-name'],
         rowFields: [
             {name: 'quantity', label: 'Quantity', type: 'number'},
             {name: 'unit', label: 'Unit', type: 'text'},
@@ -48,6 +51,7 @@ const PAGE_CONFIG = {
         title: 'Property Card',
         saveLabel: 'Save Property Card',
         summaryFields: ['po-no', 'month', 'entity-name'],
+        dashboardFields: ['po-no', 'month', 'entity-name', 'property-number'],
         rowFields: [
             {name: 'date', label: 'Date', type: 'date'},
             {name: 'reference-par-no', label: 'Reference PAR No.', type: 'text'},
@@ -66,6 +70,7 @@ const EXTRA_PAGE_CONFIG = {
         title: 'Inspection and Acceptance Report',
         saveLabel: 'Save IAR',
         summaryFields: ['entity-name', 'fund-cluster', 'supplier'],
+        dashboardFields: ['inspection-date', 'entity-name', 'supplier', 'status'],
         rowFields: [
             {name: 'stock-property-no', label: 'Stock/Property No.', type: 'text'},
             {name: 'description', label: 'Description', type: 'text'},
@@ -78,6 +83,7 @@ const EXTRA_PAGE_CONFIG = {
         title: 'Property Transfer Report',
         saveLabel: 'Save PTR',
         summaryFields: ['ptr-no', 'entity-name', 'fund-cluster'],
+        dashboardFields: ['date', 'ptr-no', 'entity-name', 'transfer-type', 'to-accountable-officer'],
         rowFields: [
             {name: 'date-acquired', label: 'Date Acquired', type: 'date'},
             {name: 'property-no', label: 'Property No.', type: 'text'},
@@ -91,6 +97,7 @@ const EXTRA_PAGE_CONFIG = {
         title: 'Property Return Slip',
         saveLabel: 'Save PRS',
         summaryFields: ['entity-name', 'fund-cluster', 'purpose'],
+        dashboardFields: ['purpose', 'entity-name', 'note', 'supply-officer-name'],
         rowFields: [
             {name: 'quantity', label: 'Quantity', type: 'number'},
             {name: 'unit', label: 'Unit', type: 'text'},
@@ -109,6 +116,133 @@ function getPageConfig(pageKey) {
 }
 
 let editingIndex = null;
+
+const FORM_LABELS = {
+    ris: 'Requisition & Issue Slip',
+    ics: 'Inventory Custodian Slip',
+    par: 'Property Acknowledgement Receipt',
+    'property-card': 'Property Card',
+    iar: 'Inspection & Acceptance Report',
+    ptr: 'Property Transfer Report',
+    prs: 'Property Return Slip'
+};
+
+function getCurrentUser() {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const activeEmail = localStorage.getItem('active_user_email');
+    const activeUser = users.find(user => user.email === activeEmail);
+    return activeUser || {name: 'Administrator', role: 'Admin', allowedForms: Object.keys(FORM_LABELS)};
+}
+
+function isAdminUser(user = getCurrentUser()) {
+    return (user.role || '').toLowerCase() === 'admin';
+}
+
+function canAccessForm(pageKey) {
+    const user = getCurrentUser();
+    return isAdminUser(user) || (user.allowedForms || []).includes(pageKey);
+}
+
+function applySidebarAccess() {
+    const user = getCurrentUser();
+    if (isAdminUser(user)) return;
+
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        const href = link.getAttribute('href') || '';
+        const pageKey = href.replace('.html', '');
+        if (FORM_LABELS[pageKey] && !(user.allowedForms || []).includes(pageKey)) {
+            link.style.display = 'none';
+        }
+        if (href === 'user-management.html') {
+            link.style.display = 'none';
+        }
+    });
+}
+
+function formatLabel(key) {
+    return key.replace(/-/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function formatValue(value) {
+    return escapeHtml(value || '-');
+}
+
+function getStoredRecords(config) {
+    return JSON.parse(localStorage.getItem(config.storageKey) || '[]');
+}
+
+function saveStoredRecords(config, records) {
+    localStorage.setItem(config.storageKey, JSON.stringify(records));
+}
+
+function getRecordFormSection() {
+    const form = document.getElementById('record-form');
+    return form ? form.closest('section') : null;
+}
+
+function showRecordForm() {
+    const formSection = getRecordFormSection();
+    if (formSection) formSection.style.display = 'block';
+}
+
+function hideRecordForm() {
+    const formSection = getRecordFormSection();
+    if (formSection) formSection.style.display = 'none';
+}
+
+function isFormView() {
+    return new URLSearchParams(window.location.search).get('view') === 'form';
+}
+
+function getEditIndexFromUrl() {
+    const value = new URLSearchParams(window.location.search).get('edit');
+    const index = parseInt(value, 10);
+    return Number.isNaN(index) ? null : index;
+}
+
+function openFormPage(index = null) {
+    const params = new URLSearchParams();
+    params.set('view', 'form');
+    if (index !== null) params.set('edit', index);
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+}
+
+function openDashboardPage() {
+    window.location.href = window.location.pathname;
+}
+
+function setDashboardVisible(isVisible) {
+    const dashboard = document.querySelector('.slip-dashboard');
+    const previewSection = document.getElementById('record-preview-section');
+
+    if (dashboard) dashboard.style.display = isVisible ? '' : 'none';
+    if (previewSection && !isVisible) previewSection.style.display = 'none';
+}
+
+function resetRecordForm(config, options = {}) {
+    const form = document.getElementById('record-form');
+    const tbody = document.querySelector('#detail-table tbody');
+
+    if (form) form.reset();
+    if (tbody) tbody.innerHTML = '';
+    createRow(config);
+    editingIndex = null;
+    updateTotals();
+
+    const previewSection = document.getElementById('record-preview-section');
+    if (previewSection) previewSection.style.display = 'none';
+
+    if (options.hideForm) hideRecordForm();
+}
 
 function createRow(config, itemData = {}) {
     const tbody = document.querySelector('#detail-table tbody');
@@ -220,43 +354,39 @@ function renderRecords(config) {
 
 function renderRecordsTable(config) {
     const recordsTableBody = document.querySelector('#records-table tbody');
-    const emptyState = document.querySelector('#records-table-empty');
-    const stored = JSON.parse(localStorage.getItem(config.storageKey) || '[]');
+    const stored = getStoredRecords(config);
+    const dashboardFields = config.dashboardFields || config.summaryFields;
 
     if (!recordsTableBody) return;
     recordsTableBody.innerHTML = '';
 
     if (stored.length === 0) {
-        if (emptyState) emptyState.style.display = 'table-row';
+        recordsTableBody.innerHTML = `<tr id="records-table-empty"><td colspan="${dashboardFields.length + 2}" class="empty-state">No records saved yet.</td></tr>`;
         return;
     }
-    if (emptyState) emptyState.style.display = 'none';
 
     stored.forEach((record, index) => {
         const row = document.createElement('tr');
-        const title = config.summaryFields.map(key => record[key]).filter(Boolean).join(' - ') || config.title;
-        const entity = record['entity-name'] || '-';
-        const date = record.date || record['date-acquired'] || record['requested-by-date'] || record['createdAt'] ? new Date(record.createdAt).toLocaleDateString() : '-';
-        const status = record.status || record['purpose'] || '-';
+        const cells = dashboardFields.map(field => `<td>${formatValue(record[field])}</td>`).join('');
 
         row.innerHTML = `
             <td>${index + 1}</td>
-            <td>${title}</td>
-            <td>${entity}</td>
-            <td>${date}</td>
-            <td>${status}</td>
             <td>
-                <button type="button" class="action-button" data-action="view" data-index="${index}">View</button>
-                <button type="button" class="action-button" data-action="edit" data-index="${index}">Edit</button>
-                <button type="button" class="action-button" data-action="pdf" data-index="${index}">Generate PDF</button>
+                <div class="action-group">
+                    <button type="button" class="action-button" data-action="download" data-index="${index}">Download PDF</button>
+                    <button type="button" class="action-button" data-action="print" data-index="${index}">Print</button>
+                    <button type="button" class="action-button" data-action="view" data-index="${index}">View</button>
+                    <button type="button" class="action-button" data-action="edit" data-index="${index}">Edit</button>
+                </div>
             </td>
         `;
+        row.insertAdjacentHTML('afterbegin', cells);
         recordsTableBody.appendChild(row);
     });
 }
 
 function renderSummaryStats(config) {
-    const stored = JSON.parse(localStorage.getItem(config.storageKey) || '[]');
+    const stored = getStoredRecords(config);
     const totalRecords = document.getElementById('total-records');
     const recentSlip = document.getElementById('recent-slip');
     const currentStatus = document.getElementById('current-status');
@@ -276,7 +406,7 @@ function renderSummaryStats(config) {
 }
 
 function renderRecordDetails(config, index) {
-    const stored = JSON.parse(localStorage.getItem(config.storageKey) || '[]');
+    const stored = getStoredRecords(config);
     const record = stored[index];
     const previewSection = document.getElementById('record-preview-section');
     const preview = document.getElementById('record-preview');
@@ -289,7 +419,7 @@ function renderRecordDetails(config, index) {
     Object.keys(record).forEach(key => {
         if (key === 'items' || key === 'createdAt') return;
         const row = document.createElement('div');
-        row.innerHTML = `<strong>${formatLabel(key)}:</strong> ${record[key] || '-'}`;
+        row.innerHTML = `<strong>${formatLabel(key)}:</strong> ${formatValue(record[key])}`;
         summary.appendChild(row);
     });
 
@@ -300,7 +430,7 @@ function renderRecordDetails(config, index) {
         record.items.forEach(item => {
             const itemBlock = document.createElement('div');
             itemBlock.className = 'preview-item';
-            itemBlock.innerHTML = config.rowFields.map(field => `<div><strong>${field.label}:</strong> ${item[field.name] || '-'}</div>`).join('');
+            itemBlock.innerHTML = config.rowFields.map(field => `<div><strong>${field.label}:</strong> ${formatValue(item[field.name])}</div>`).join('');
             itemsSection.appendChild(itemBlock);
         });
     } else {
@@ -311,7 +441,10 @@ function renderRecordDetails(config, index) {
     actions.className = 'preview-actions';
     actions.innerHTML = `
         <button type="button" id="preview-edit">Edit Slip</button>
-        <button type="button" id="preview-pdf">Generate PDF</button>
+        <button type="button" id="preview-download">Download PDF</button>
+        <button type="button" id="preview-print">Print</button>
+        <button type="button" id="preview-delete" class="danger">Delete Slip</button>
+        <button type="button" id="preview-close" class="secondary">Close</button>
     `;
 
     preview.innerHTML = '';
@@ -321,12 +454,16 @@ function renderRecordDetails(config, index) {
     previewSection.style.display = 'block';
 
     document.getElementById('preview-edit').addEventListener('click', () => startEditRecord(config, index));
-    document.getElementById('preview-pdf').addEventListener('click', () => generatePdf(config, record));
+    document.getElementById('preview-download').addEventListener('click', () => generatePdf(config, record, 'download'));
+    document.getElementById('preview-print').addEventListener('click', () => generatePdf(config, record, 'print'));
+    document.getElementById('preview-delete').addEventListener('click', () => deleteRecord(config, index));
+    document.getElementById('preview-close').addEventListener('click', () => {
+        previewSection.style.display = 'none';
+    });
 }
 
 function showFormForEdit(record, config, index) {
-    const form = document.getElementById('record-form');
-    form.scrollIntoView({ behavior: 'smooth' });
+    showRecordForm();
 
     config.summaryFields.concat(getExtraFormFields(config)).forEach(id => {
         const element = document.getElementById(id);
@@ -334,48 +471,142 @@ function showFormForEdit(record, config, index) {
     });
 
     document.querySelector('#detail-table tbody').innerHTML = '';
-    record.items.forEach(item => createRow(config, item));
+    (record.items || []).forEach(item => createRow(config, item));
     editingIndex = index;
 }
 
 function startEditRecord(config, index) {
-    const stored = JSON.parse(localStorage.getItem(config.storageKey) || '[]');
-    const record = stored[index];
-    if (!record) return;
-    showFormForEdit(record, config, index);
+    openFormPage(index);
 }
 
-function generatePdf(config, record) {
+function deleteRecord(config, index) {
+    const stored = getStoredRecords(config);
+    const record = stored[index];
+
+    if (!record) return;
+    if (!confirm(`Delete this ${config.title}?`)) return;
+
+    stored.splice(index, 1);
+    saveStoredRecords(config, stored);
+
+    if (editingIndex === index) {
+        resetRecordForm(config);
+    } else if (editingIndex !== null && editingIndex > index) {
+        editingIndex -= 1;
+    }
+
+    const previewSection = document.getElementById('record-preview-section');
+    if (previewSection) previewSection.style.display = 'none';
+    renderRecords(config);
+    alert(`${config.title} deleted.`);
+}
+
+function buildPrintableRecord(config) {
+    return {
+        ...gatherFormData(config),
+        items: gatherTableRows(config),
+        createdAt: new Date().toISOString()
+    };
+}
+
+function generatePdf(config, record, mode = 'print') {
+    if (!record) {
+        alert('No record is available to print.');
+        return;
+    }
+
     const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert('Please allow pop-ups for this page, then try again.');
+        return;
+    }
+
     const html = `
         <html>
         <head>
             <title>${config.title}</title>
             <style>
-                body { font-family: Arial, sans-serif; padding: 20px; }
-                h1 { font-size: 22px; }
+                * { box-sizing: border-box; }
+                body { font-family: Arial, sans-serif; color: #111; padding: 24px; }
+                .print-logo { width: 72px; height: 72px; margin: 0 auto 12px; display: grid; place-items: center; border-radius: 50%; border: 4px solid #e5e7eb; background: conic-gradient(#e64141 0 25%, #36b267 0 50%, #f0d44c 0 75%, #4b88d4 0); color: #fff; font-weight: 800; }
+                h1 { font-size: 22px; text-align: center; margin-bottom: 24px; }
+                h2 { font-size: 16px; margin-bottom: 8px; }
                 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                td, th { border: 1px solid #ccc; padding: 8px; }
+                td, th { border: 1px solid #444; padding: 8px; font-size: 12px; vertical-align: top; }
+                th { background: #f2f2f2; }
+                .details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 24px; }
+                .details div { font-size: 13px; }
                 .section { margin-top: 18px; }
+                @media print {
+                    body { padding: 0; }
+                    button { display: none; }
+                }
             </style>
         </head>
         <body>
-            <h1>${config.title}</h1>
-            ${Object.keys(record).filter(key => key !== 'items' && key !== 'createdAt').map(key => `<div><strong>${formatLabel(key)}:</strong> ${record[key] || '-'}</div>`).join('')}
+            <div class="print-logo">MC</div>
+            <h1>${escapeHtml(config.title)}</h1>
+            <div class="details">
+                ${Object.keys(record).filter(key => key !== 'items' && key !== 'createdAt').map(key => `<div><strong>${formatLabel(key)}:</strong> ${formatValue(record[key])}</div>`).join('')}
+            </div>
             <div class="section">
                 <h2>Items</h2>
                 <table>
-                    <thead><tr>${config.rowFields.map(field => `<th>${field.label}</th>`).join('')}</tr></thead>
-                    <tbody>${record.items.map(item => `<tr>${config.rowFields.map(field => `<td>${item[field.name] || '-'}</td>`).join('')}</tr>`).join('')}</tbody>
+                    <thead><tr>${config.rowFields.map(field => `<th>${escapeHtml(field.label)}</th>`).join('')}</tr></thead>
+                    <tbody>
+                        ${(record.items || []).length
+                            ? record.items.map(item => `<tr>${config.rowFields.map(field => `<td>${formatValue(item[field.name])}</td>`).join('')}</tr>`).join('')
+                            : `<tr><td colspan="${config.rowFields.length}">No items encoded.</td></tr>`}
+                    </tbody>
                 </table>
             </div>
+            <script>
+                window.addEventListener('load', () => {
+                    window.focus();
+                    ${mode === 'download' ? "document.title = '" + escapeHtml(config.title) + "';" : ''}
+                    setTimeout(() => window.print(), 100);
+                });
+            <\/script>
         </body>
         </html>
     `;
     printWindow.document.write(html);
     printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+}
+
+function addCurrentFormPrintButton(config) {
+    const buttonRow = document.querySelector('#record-form .button-row');
+    if (!buttonRow || document.getElementById('print-current-record')) return;
+
+    const printButton = document.createElement('button');
+    printButton.type = 'button';
+    printButton.id = 'print-current-record';
+    printButton.className = 'secondary';
+    printButton.textContent = 'Print';
+    printButton.addEventListener('click', () => {
+        generatePdf(config, buildPrintableRecord(config), 'print');
+    });
+    buttonRow.appendChild(printButton);
+
+    const downloadButton = document.createElement('button');
+    downloadButton.type = 'button';
+    downloadButton.id = 'download-current-record';
+    downloadButton.className = 'secondary';
+    downloadButton.textContent = 'Download PDF';
+    downloadButton.addEventListener('click', () => {
+        generatePdf(config, buildPrintableRecord(config), 'download');
+    });
+    buttonRow.appendChild(downloadButton);
+
+    const backButton = document.createElement('button');
+    backButton.type = 'button';
+    backButton.id = 'back-to-record-dashboard';
+    backButton.className = 'secondary';
+    backButton.textContent = 'Back to Dashboard';
+    backButton.addEventListener('click', () => {
+        openDashboardPage();
+    });
+    buttonRow.appendChild(backButton);
 }
 
 function populateRecordTableConfig() {
@@ -383,15 +614,53 @@ function populateRecordTableConfig() {
     if (!table) return;
     const head = table.querySelector('thead');
     if (!head) return;
+    const config = getPageConfig(document.body.dataset.page);
+    const dashboardFields = config.dashboardFields || config.summaryFields;
     head.innerHTML = `
         <tr>
+            ${dashboardFields.map(field => `<th>${formatLabel(field)}</th>`).join('')}
             <th>#</th>
-            <th>Slip</th>
-            <th>Entity</th>
-            <th>Date</th>
-            <th>Status</th>
             <th>Action</th>
         </tr>
+    `;
+}
+
+function removeSignatureFields() {
+    document.querySelectorAll('#record-form label').forEach(label => {
+        if (!label.textContent.toLowerCase().includes('signature')) return;
+        const field = label.closest('div');
+        if (field) field.remove();
+    });
+
+    document.querySelectorAll('#record-form h3').forEach(heading => {
+        heading.textContent = heading.textContent.replace(/ and Signatures/gi, '');
+    });
+}
+
+function addHeaderLogo() {
+    const header = document.querySelector('.dashboard-header');
+    if (!header || header.querySelector('.form-logo')) return;
+    const logo = document.createElement('div');
+    logo.className = 'form-logo';
+    logo.textContent = 'MC';
+    header.prepend(logo);
+}
+
+function showAccessDenied(config) {
+    const mainContent = document.querySelector('.main-content');
+    if (!mainContent) return;
+    mainContent.innerHTML = `
+        <div class="dashboard-header">
+            <div class="form-logo">MC</div>
+            <h1>${escapeHtml(config.title)}</h1>
+        </div>
+        <section>
+            <h3>Access Restricted</h3>
+            <p class="empty-state">Your account can only access forms assigned by the administrator.</p>
+            <div class="button-row">
+                <button type="button" onclick="window.location.href='index.html'">Back to Dashboard</button>
+            </div>
+        </section>
     `;
 }
 
@@ -400,23 +669,29 @@ function initFormPage() {
     const config = getPageConfig(pageKey);
     if (!config) return;
 
+    applySidebarAccess();
+
+    if (!canAccessForm(pageKey)) {
+        showAccessDenied(config);
+        return;
+    }
+
     const headerTitle = document.querySelector('.dashboard-header h1');
     const saveButton = document.querySelector('#record-form button[type="submit"]');
     if (headerTitle) headerTitle.textContent = `${config.title}`;
     if (saveButton) saveButton.textContent = config.saveLabel;
 
+    addHeaderLogo();
+    removeSignatureFields();
     populateRecordTableConfig();
+    addCurrentFormPrintButton(config);
+    hideRecordForm();
 
     document.getElementById('add-row').addEventListener('click', () => createRow(config));
     const createNew = document.getElementById('create-new-record');
     if (createNew) {
         createNew.addEventListener('click', () => {
-            document.getElementById('record-form').reset();
-            document.querySelector('#detail-table tbody').innerHTML = '';
-            createRow(config);
-            editingIndex = null;
-            updateTotals();
-            document.getElementById('record-form').scrollIntoView({ behavior: 'smooth' });
+            openFormPage();
         });
     }
 
@@ -428,9 +703,10 @@ function initFormPage() {
             alert('Please add at least one line item.');
             return;
         }
-        const stored = JSON.parse(localStorage.getItem(config.storageKey) || '[]');
+        const stored = getStoredRecords(config);
         if (editingIndex !== null) {
             stored[editingIndex] = {
+                ...stored[editingIndex],
                 ...formData,
                 items,
                 createdAt: stored[editingIndex].createdAt || new Date().toISOString()
@@ -445,12 +721,8 @@ function initFormPage() {
             });
             alert(`${config.title} saved.`);
         }
-        localStorage.setItem(config.storageKey, JSON.stringify(stored));
-        document.getElementById('record-form').reset();
-        document.querySelector('#detail-table tbody').innerHTML = '';
-        createRow(config);
-        updateTotals();
-        renderRecords(config);
+        saveStoredRecords(config, stored);
+        openDashboardPage();
     });
 
     document.getElementById('records-table').addEventListener('click', (event) => {
@@ -463,18 +735,14 @@ function initFormPage() {
         if (action === 'edit') {
             startEditRecord(config, index);
         }
-        if (action === 'pdf') {
-            const stored = JSON.parse(localStorage.getItem(config.storageKey) || '[]');
-            generatePdf(config, stored[index]);
+        if (action === 'download' || action === 'print') {
+            const stored = getStoredRecords(config);
+            if (stored[index]) generatePdf(config, stored[index], action);
         }
     });
 
     document.getElementById('clear-form').addEventListener('click', () => {
-        document.getElementById('record-form').reset();
-        document.querySelector('#detail-table tbody').innerHTML = '';
-        createRow(config);
-        editingIndex = null;
-        updateTotals();
+        resetRecordForm(config);
     });
 
     document.querySelector('#detail-table tbody').addEventListener('click', (event) => {
@@ -487,6 +755,24 @@ function initFormPage() {
     createRow(config);
     renderRecords(config);
     updateTotals();
+
+    if (isFormView()) {
+        setDashboardVisible(false);
+        const editIndex = getEditIndexFromUrl();
+        if (editIndex !== null) {
+            const stored = getStoredRecords(config);
+            if (stored[editIndex]) {
+                showFormForEdit(stored[editIndex], config, editIndex);
+            } else {
+                openDashboardPage();
+            }
+        } else {
+            showRecordForm();
+        }
+    } else {
+        setDashboardVisible(true);
+        hideRecordForm();
+    }
 }
 
 window.addEventListener('DOMContentLoaded', initFormPage);

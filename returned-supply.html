@@ -22,6 +22,7 @@
 </div>
 <div class="main-content">
     <div class="dashboard-header">
+        <div class="form-logo">MC</div>
         <h1>Returned Supply</h1>
     </div>
     <section>
@@ -32,28 +33,91 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const returnedList = document.getElementById('returned-list');
-    const prsRecords = JSON.parse(localStorage.getItem('prs_records') || '[]');
-    
-    if (prsRecords.length === 0) {
-        returnedList.innerHTML = '<p class="empty-state">No returned supplies found.</p>';
-        return;
+
+    function getPrsRecords() {
+        return JSON.parse(localStorage.getItem('prs_records') || '[]');
     }
 
-    prsRecords.forEach(record => {
-        const card = document.createElement('div');
-        card.className = 'record-card';
-        const title = `PRS - ${record['entity-name']} - ${record['purpose']}`;
-        card.innerHTML = `
-            <div class="card-summary">
-                <strong>${title}</strong>
-                <span>${new Date(record.createdAt).toLocaleString()}</span>
-            </div>
-            <div class="card-meta">
-                <button type="button" class="view-record" onclick="alert('View details for ${title}')">View</button>
+    function savePrsRecords(records) {
+        localStorage.setItem('prs_records', JSON.stringify(records));
+    }
+
+    function formatLabel(key) {
+        return key.replace(/-/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
+    }
+
+    function renderItemDetails(record) {
+        if (!record.items || record.items.length === 0) {
+            return '<div class="record-details">No returned item details found.</div>';
+        }
+
+        return `
+            <div class="record-details">
+                ${record.items.map((item, itemIndex) => `
+                    <div class="preview-item">
+                        <strong>Item ${itemIndex + 1}</strong>
+                        ${Object.keys(item).map(key => `<div><strong>${formatLabel(key)}:</strong> ${item[key] || '-'}</div>`).join('')}
+                    </div>
+                `).join('')}
             </div>
         `;
-        returnedList.appendChild(card);
+    }
+
+    function renderReturnedSupply() {
+        const prsRecords = getPrsRecords();
+        returnedList.innerHTML = '';
+
+        if (prsRecords.length === 0) {
+            returnedList.innerHTML = '<p class="empty-state">No returned supplies found.</p>';
+            return;
+        }
+
+        prsRecords.forEach((record, index) => {
+            const card = document.createElement('div');
+            card.className = 'record-card';
+            const title = `PRS - ${record['entity-name'] || 'No Entity'} - ${record.purpose || 'No Purpose'}`;
+            const createdAt = record.createdAt ? new Date(record.createdAt).toLocaleString() : '-';
+            card.innerHTML = `
+                <div class="card-summary">
+                    <strong>${title}</strong>
+                    <span>${createdAt}</span>
+                </div>
+                <div id="returned-details-${index}" style="display:none;">
+                    ${renderItemDetails(record)}
+                </div>
+                <div class="card-meta">
+                    <button type="button" data-action="view" data-index="${index}">View</button>
+                    <button type="button" data-action="delete" data-index="${index}" class="danger">Delete</button>
+                </div>
+            `;
+            returnedList.appendChild(card);
+        });
+    }
+
+    returnedList.addEventListener('click', (event) => {
+        const button = event.target.closest('button');
+        if (!button) return;
+
+        const index = parseInt(button.dataset.index, 10);
+        if (Number.isNaN(index)) return;
+
+        if (button.dataset.action === 'view') {
+            const details = document.getElementById(`returned-details-${index}`);
+            const isHidden = details.style.display === 'none';
+            details.style.display = isHidden ? 'block' : 'none';
+            button.textContent = isHidden ? 'Hide' : 'View';
+        }
+
+        if (button.dataset.action === 'delete') {
+            if (!confirm('Delete this returned supply record? This also removes the source PRS record.')) return;
+            const records = getPrsRecords();
+            records.splice(index, 1);
+            savePrsRecords(records);
+            renderReturnedSupply();
+        }
     });
+
+    renderReturnedSupply();
 });
 </script>
 </body>

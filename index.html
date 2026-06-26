@@ -29,45 +29,69 @@
 <div class="main-content">
 
     <div class="dashboard-header">
-        Municipality of Carigara<br>
-        Supply Office Property Custody Management System
+        <div class="form-logo">MC</div>
+        <div>
+            Municipality of Carigara<br>
+            Supply Office Property Custody Management System
+        </div>
     </div>
 
     <!-- DASHBOARD CARDS -->
     <div class="cards">
-        <a href="ris.html" class="card">
+        <a href="ris.html" class="card" data-form-card="ris">
             <div class="card-icon"></div>
-            <div class="card-title">Requisition & Issue Slip</div>
+            <div>
+                <div class="card-title">Requisition & Issue Slip</div>
+                <div class="dashboard-count" data-count-for="ris">0 records</div>
+            </div>
         </a>
 
-        <a href="ics.html" class="card">
+        <a href="ics.html" class="card" data-form-card="ics">
             <div class="card-icon"></div>
-            <div class="card-title">Inventory Custodian Slip</div>
+            <div>
+                <div class="card-title">Inventory Custodian Slip</div>
+                <div class="dashboard-count" data-count-for="ics">0 records</div>
+            </div>
         </a>
 
-        <a href="par.html" class="card">
+        <a href="par.html" class="card" data-form-card="par">
             <div class="card-icon"></div>
-            <div class="card-title">Property Acknowledgement Receipt</div>
+            <div>
+                <div class="card-title">Property Acknowledgement Receipt</div>
+                <div class="dashboard-count" data-count-for="par">0 records</div>
+            </div>
         </a>
 
-        <a href="property-card.html" class="card">
+        <a href="property-card.html" class="card" data-form-card="property-card">
             <div class="card-icon"></div>
-            <div class="card-title">Property Card</div>
+            <div>
+                <div class="card-title">Property Card</div>
+                <div class="dashboard-count" data-count-for="property-card">0 records</div>
+            </div>
         </a>
 
-        <a href="iar.html" class="card">
+        <a href="iar.html" class="card" data-form-card="iar">
             <div class="card-icon"></div>
-            <div class="card-title">Inspection & Acceptance Report</div>
+            <div>
+                <div class="card-title">Inspection & Acceptance Report</div>
+                <div class="dashboard-count" data-count-for="iar">0 records</div>
+            </div>
         </a>
 
-        <a href="ptr.html" class="card">
+        <a href="ptr.html" class="card" data-form-card="ptr">
             <div class="card-icon"></div>
-            <div class="card-title">Property Transfer Report</div>
+            <div>
+                <div class="card-title">Property Transfer Report</div>
+                <div class="dashboard-count" data-count-for="ptr">0 records</div>
+            </div>
         </a>
 
-        <a href="prs.html" class="card">
+        <a href="prs.html" class="card" data-form-card="prs">
             <div class="card-icon"></div>
-            <div class="card-title">Property Return Slip</div>
+            <div>
+                <div class="card-title">Property Return Slip</div>
+                <div class="dashboard-count" data-count-for="prs">0 records</div>
+            </div>
         </a>
 
         <a href="returned-supply.html" class="card">
@@ -75,16 +99,51 @@
             <div class="card-title">Returned Supply</div>
         </a>
 
-        <a href="user-management.html" class="card">
-            <div class="card-icon"></div>
-            <div class="card-title">User Management</div>
-        </a>
-
 </div>
 
 <!-- SCRIPTS (ONLY WHAT YOU NEED) -->
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const storageKeys = {
+        ris: 'ris_records',
+        ics: 'ics_records',
+        par: 'par_records',
+        'property-card': 'property_card_records',
+        iar: 'iar_records',
+        ptr: 'ptr_records',
+        prs: 'prs_records'
+    };
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const activeEmail = localStorage.getItem('active_user_email');
+    const currentUser = users.find(user => user.email === activeEmail) || {role: 'Admin', allowedForms: Object.keys(storageKeys)};
+    const isAdmin = (currentUser.role || '').toLowerCase() === 'admin';
 
+    Object.keys(storageKeys).forEach(formKey => {
+        const records = JSON.parse(localStorage.getItem(storageKeys[formKey]) || '[]');
+        const count = document.querySelector(`[data-count-for="${formKey}"]`);
+        if (count) count.textContent = `${records.length} ${records.length === 1 ? 'record' : 'records'}`;
+
+        const card = document.querySelector(`[data-form-card="${formKey}"]`);
+        if (card && !isAdmin && !(currentUser.allowedForms || []).includes(formKey)) {
+            card.style.display = 'none';
+        }
+    });
+
+    if (!isAdmin) {
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            const href = link.getAttribute('href') || '';
+            const pageKey = href.replace('.html', '');
+            if (storageKeys[pageKey] && !(currentUser.allowedForms || []).includes(pageKey)) {
+                link.style.display = 'none';
+            }
+            if (href === 'user-management.html') {
+                link.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
 
 </body>
 </html>
