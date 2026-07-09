@@ -948,6 +948,11 @@ button.danger:hover,
         padding-top: 64px;
     }
 
+    body.sidebar-open {
+        overflow: hidden;
+        touch-action: none;
+    }
+
     .sidebar-toggle {
         width: 44px;
         height: 44px;
@@ -979,6 +984,7 @@ button.danger:hover,
         position: fixed;
         top: 12px;
         left: 12px;
+        bottom: 12px;
         z-index: 1000;
         grid-template-columns: 1fr;
         gap: 10px;
@@ -987,6 +993,7 @@ button.danger:hover,
         transform: translateX(calc(-100% - 24px));
         transition: transform 180ms ease;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         background: linear-gradient(180deg, var(--sidebar), var(--sidebar-dark));
         border-radius: 10px;
     }
@@ -1072,9 +1079,13 @@ button.danger:hover,
 
     .dashboard-header {
         align-items: flex-start;
-        gap: 12px;
-        padding: 16px;
-        font-size: 20px;
+        gap: 10px;
+        padding: 18px;
+        font-size: 18px;
+    }
+
+    .dashboard-header > div:first-child {
+        width: 100%;
     }
 
     .form-logo {
@@ -1082,6 +1093,12 @@ button.danger:hover,
         height: 50px;
         flex-basis: 50px;
         font-size: 14px;
+    }
+
+    .dashboard-header p {
+        margin-top: 8px;
+        font-size: 13px;
+        line-height: 1.5;
     }
 
     .cards,
@@ -1099,6 +1116,7 @@ button.danger:hover,
 
     .cards {
         grid-template-columns: 1fr;
+        gap: 14px;
     }
 
     .dashboard-stats {
@@ -1111,7 +1129,8 @@ button.danger:hover,
     }
 
     .dynamic-table {
-        min-width: 620px;
+        min-width: 0;
+        width: 100%;
     }
 
     .button-row button,
@@ -1131,7 +1150,9 @@ button.danger:hover,
         width: calc(100vw - 20px);
         top: 10px;
         left: 10px;
+        bottom: 10px;
         padding: 64px 14px 14px;
+        max-height: calc(100vh - 20px);
     }
 
     .main-content {
