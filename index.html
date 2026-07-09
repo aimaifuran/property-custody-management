@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Supply Office</title>
-
     <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 <button class="sidebar-toggle" type="button" aria-label="Open menu" aria-expanded="false">
     <span></span>
@@ -15,33 +13,30 @@
     <span></span>
 </button>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
     <h2>Supply Office</h2>
-    <a href="index.html">🏠 Dashboard</a>
-    <a href="ris.html">📝 Requisition & Issue</a>
-    <a href="ics.html">📑 Inventory Custodian</a>
-    <a href="par.html">📘 Property Acknowledgement Receipt</a>
-    <a href="property-card.html">📁 Property Card</a>
-    <a href="iar.html">✅ Inspection & Acceptance Report</a>
-    <a href="ptr.html">🔁 Property Transfer Report</a>
-    <a href="prs.html">↩️ Property Return Slip</a>
-    <a href="returned-supply.html">🔄 Returned Supply</a>
-    <a href="user-management.html">👥 User Management</a>
+    <a href="index.html">Dashboard</a>
+    <a href="ris.html">Requisition & Issue</a>
+    <a href="ics.html">Inventory Custodian</a>
+    <a href="par.html">Property Acknowledgement Receipt</a>
+    <a href="property-card.html">Property Card</a>
+    <a href="iar.html">Inspection & Acceptance Report</a>
+    <a href="ptr.html">Property Transfer Report</a>
+    <a href="prs.html">Property Return Slip</a>
+    <a href="returned-supply.html">Returned Supply</a>
+    <a href="user-management.html">User Management</a>
+    <a href="login.html">Login</a>
 </div>
 
-<!-- MAIN CONTENT -->
 <div class="main-content">
-
     <div class="dashboard-header">
-        <div class="form-logo">MC</div>
+        <div class="form-logo"><span>MC</span></div>
         <div>
             Municipality of Carigara<br>
             Supply Office Property Custody Management System
         </div>
     </div>
 
-    <!-- DASHBOARD CARDS -->
     <div class="cards">
         <a href="ris.html" class="card" data-form-card="ris">
             <div class="card-icon"></div>
@@ -99,57 +94,33 @@
             </div>
         </a>
 
-        <a href="returned-supply.html" class="card">
+        <a href="returned-supply.html" class="card" data-form-card="returned-supply">
             <div class="card-icon"></div>
             <div class="card-title">Returned Supply</div>
         </a>
-
+    </div>
 </div>
 
-<!-- SCRIPTS (ONLY WHAT YOU NEED) -->
-
+<script src="js/api.js"></script>
+<script src="js/session.js"></script>
 <script src="js/navigation.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const storageKeys = {
-        ris: 'ris_records',
-        ics: 'ics_records',
-        par: 'par_records',
-        'property-card': 'property_card_records',
-        iar: 'iar_records',
-        ptr: 'ptr_records',
-        prs: 'prs_records'
-    };
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const activeEmail = localStorage.getItem('active_user_email');
-    const currentUser = users.find(user => user.email === activeEmail) || {role: 'Admin', allowedForms: Object.keys(storageKeys)};
-    const isAdmin = (currentUser.role || '').toLowerCase() === 'admin';
+document.addEventListener('DOMContentLoaded', async () => {
+    const user = await requireAuth();
+    if (!user) return;
 
-    Object.keys(storageKeys).forEach(formKey => {
-        const records = JSON.parse(localStorage.getItem(storageKeys[formKey]) || '[]');
+    const { counts } = await API.getRecordCounts();
+
+    Object.entries(counts).forEach(([formKey, total]) => {
         const count = document.querySelector(`[data-count-for="${formKey}"]`);
-        if (count) count.textContent = `${records.length} ${records.length === 1 ? 'record' : 'records'}`;
+        if (count) count.textContent = `${total} ${total === 1 ? 'record' : 'records'}`;
 
         const card = document.querySelector(`[data-form-card="${formKey}"]`);
-        if (card && !isAdmin && !(currentUser.allowedForms || []).includes(formKey)) {
+        if (card && !canAccessForm(user, formKey)) {
             card.style.display = 'none';
         }
     });
-
-    if (!isAdmin) {
-        document.querySelectorAll('.sidebar a').forEach(link => {
-            const href = link.getAttribute('href') || '';
-            const pageKey = href.replace('.html', '');
-            if (storageKeys[pageKey] && !(currentUser.allowedForms || []).includes(pageKey)) {
-                link.style.display = 'none';
-            }
-            if (href === 'user-management.html') {
-                link.style.display = 'none';
-            }
-        });
-    }
 });
 </script>
-
 </body>
 </html>

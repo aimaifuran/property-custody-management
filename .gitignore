@@ -1,0 +1,3 @@
+node_modules/
+server/property_custody.db
+server/property_custody.db-*

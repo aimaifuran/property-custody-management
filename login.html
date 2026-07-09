@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Property Custody System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-body">
+    <main class="login-shell">
+        <section class="login-panel">
+            <div class="login-brand">
+                <div class="form-logo"><span>MC</span></div>
+                <div>
+                    <span>Municipality of Carigara</span>
+                    <h1>Property Custody System</h1>
+                </div>
+            </div>
+
+            <form id="login-form" class="login-form">
+                <div class="login-heading">
+                    <h2>Sign in</h2>
+                    <p>Use the account assigned by the administrator.</p>
+                </div>
+
+                <div>
+                    <label for="login-email">Email address</label>
+                    <input id="login-email" type="email" autocomplete="email" required>
+                </div>
+
+                <div>
+                    <label for="login-password">Password</label>
+                    <input id="login-password" type="password" autocomplete="current-password" required>
+                </div>
+
+                <div class="login-options">
+                    <label class="remember-option">
+                        <input id="remember-login" type="checkbox" checked>
+                        <span>Keep me signed in</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="login-submit">Login</button>
+                <p class="login-hint">Default admin: admin@supply.local / admin123</p>
+                <p id="login-message" class="login-message" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <aside class="login-info">
+            <div>
+                <span class="login-kicker">Supply Office</span>
+                <h2>Secure access for every office form.</h2>
+                <p>Admins can view all records. Office users only see the forms assigned to their account.</p>
+            </div>
+            <div class="login-stats">
+                <div><strong id="login-user-count">0</strong><span>Users</span></div>
+                <div><strong id="login-record-count">0</strong><span>Records</span></div>
+            </div>
+        </aside>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/session.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

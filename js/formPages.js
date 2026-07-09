@@ -115,48 +115,11 @@ function getPageConfig(pageKey) {
     return PAGE_CONFIG[pageKey] || EXTRA_PAGE_CONFIG[pageKey];
 }
 
-let editingIndex = null;
+let editingId = null;
+let cachedRecords = [];
 
-const FORM_LABELS = {
-    ris: 'Requisition & Issue Slip',
-    ics: 'Inventory Custodian Slip',
-    par: 'Property Acknowledgement Receipt',
-    'property-card': 'Property Card',
-    iar: 'Inspection & Acceptance Report',
-    ptr: 'Property Transfer Report',
-    prs: 'Property Return Slip'
-};
-
-function getCurrentUser() {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const activeEmail = localStorage.getItem('active_user_email');
-    const activeUser = users.find(user => user.email === activeEmail);
-    return activeUser || {name: 'Administrator', role: 'Admin', allowedForms: Object.keys(FORM_LABELS)};
-}
-
-function isAdminUser(user = getCurrentUser()) {
-    return (user.role || '').toLowerCase() === 'admin';
-}
-
-function canAccessForm(pageKey) {
-    const user = getCurrentUser();
-    return isAdminUser(user) || (user.allowedForms || []).includes(pageKey);
-}
-
-function applySidebarAccess() {
-    const user = getCurrentUser();
-    if (isAdminUser(user)) return;
-
-    document.querySelectorAll('.sidebar a').forEach(link => {
-        const href = link.getAttribute('href') || '';
-        const pageKey = href.replace('.html', '');
-        if (FORM_LABELS[pageKey] && !(user.allowedForms || []).includes(pageKey)) {
-            link.style.display = 'none';
-        }
-        if (href === 'user-management.html') {
-            link.style.display = 'none';
-        }
-    });
+function getPageKey() {
+    return document.body.dataset.page;
 }
 
 function formatLabel(key) {
@@ -176,12 +139,14 @@ function formatValue(value) {
     return escapeHtml(value || '-');
 }
 
-function getStoredRecords(config) {
-    return JSON.parse(localStorage.getItem(config.storageKey) || '[]');
+async function fetchRecords() {
+    const { records } = await API.getRecords(getPageKey());
+    cachedRecords = records;
+    return records;
 }
 
-function saveStoredRecords(config, records) {
-    localStorage.setItem(config.storageKey, JSON.stringify(records));
+function findRecordById(id) {
+    return cachedRecords.find(record => record.id === id);
 }
 
 function getRecordFormSection() {
@@ -203,16 +168,16 @@ function isFormView() {
     return new URLSearchParams(window.location.search).get('view') === 'form';
 }
 
-function getEditIndexFromUrl() {
+function getEditIdFromUrl() {
     const value = new URLSearchParams(window.location.search).get('edit');
-    const index = parseInt(value, 10);
-    return Number.isNaN(index) ? null : index;
+    const id = parseInt(value, 10);
+    return Number.isNaN(id) ? null : id;
 }
 
-function openFormPage(index = null) {
+function openFormPage(id = null) {
     const params = new URLSearchParams();
     params.set('view', 'form');
-    if (index !== null) params.set('edit', index);
+    if (id !== null) params.set('edit', id);
     window.location.href = `${window.location.pathname}?${params.toString()}`;
 }
 
@@ -235,7 +200,7 @@ function resetRecordForm(config, options = {}) {
     if (form) form.reset();
     if (tbody) tbody.innerHTML = '';
     createRow(config);
-    editingIndex = null;
+    editingId = null;
     updateTotals();
 
     const previewSection = document.getElementById('record-preview-section');
@@ -354,7 +319,7 @@ function renderRecords(config) {
 
 function renderRecordsTable(config) {
     const recordsTableBody = document.querySelector('#records-table tbody');
-    const stored = getStoredRecords(config);
+    const stored = cachedRecords;
     const dashboardFields = config.dashboardFields || config.summaryFields;
 
     if (!recordsTableBody) return;
@@ -373,10 +338,10 @@ function renderRecordsTable(config) {
             <td>${index + 1}</td>
             <td>
                 <div class="action-group">
-                    <button type="button" class="action-button" data-action="download" data-index="${index}">Download PDF</button>
-                    <button type="button" class="action-button" data-action="print" data-index="${index}">Print</button>
-                    <button type="button" class="action-button" data-action="view" data-index="${index}">View</button>
-                    <button type="button" class="action-button" data-action="edit" data-index="${index}">Edit</button>
+                    <button type="button" class="action-button" data-action="download" data-id="${record.id}">Download PDF</button>
+                    <button type="button" class="action-button" data-action="print" data-id="${record.id}">Print</button>
+                    <button type="button" class="action-button" data-action="view" data-id="${record.id}">View</button>
+                    <button type="button" class="action-button" data-action="edit" data-id="${record.id}">Edit</button>
                 </div>
             </td>
         `;
@@ -386,7 +351,7 @@ function renderRecordsTable(config) {
 }
 
 function renderSummaryStats(config) {
-    const stored = getStoredRecords(config);
+    const stored = cachedRecords;
     const totalRecords = document.getElementById('total-records');
     const recentSlip = document.getElementById('recent-slip');
     const currentStatus = document.getElementById('current-status');
@@ -405,9 +370,8 @@ function renderSummaryStats(config) {
     }
 }
 
-function renderRecordDetails(config, index) {
-    const stored = getStoredRecords(config);
-    const record = stored[index];
+function renderRecordDetails(config, id) {
+    const record = findRecordById(id);
     const previewSection = document.getElementById('record-preview-section');
     const preview = document.getElementById('record-preview');
 
@@ -453,48 +417,46 @@ function renderRecordDetails(config, index) {
     preview.appendChild(actions);
     previewSection.style.display = 'block';
 
-    document.getElementById('preview-edit').addEventListener('click', () => startEditRecord(config, index));
+    document.getElementById('preview-edit').addEventListener('click', () => startEditRecord(config, id));
     document.getElementById('preview-download').addEventListener('click', () => generatePdf(config, record, 'download'));
     document.getElementById('preview-print').addEventListener('click', () => generatePdf(config, record, 'print'));
-    document.getElementById('preview-delete').addEventListener('click', () => deleteRecord(config, index));
+    document.getElementById('preview-delete').addEventListener('click', () => deleteRecord(config, id));
     document.getElementById('preview-close').addEventListener('click', () => {
         previewSection.style.display = 'none';
     });
 }
 
-function showFormForEdit(record, config, index) {
+function showFormForEdit(record, config, id) {
     showRecordForm();
 
-    config.summaryFields.concat(getExtraFormFields(config)).forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.value = record[id] || '';
+    config.summaryFields.concat(getExtraFormFields(config)).forEach(fieldId => {
+        const element = document.getElementById(fieldId);
+        if (element) element.value = record[fieldId] || '';
     });
 
     document.querySelector('#detail-table tbody').innerHTML = '';
     (record.items || []).forEach(item => createRow(config, item));
-    editingIndex = index;
+    editingId = id;
 }
 
-function startEditRecord(config, index) {
-    openFormPage(index);
+function startEditRecord(config, id) {
+    openFormPage(id);
 }
 
-function deleteRecord(config, index) {
-    const stored = getStoredRecords(config);
-    const record = stored[index];
+async function deleteRecord(config, id) {
+    const record = findRecordById(id);
 
     if (!record) return;
     if (!confirm(`Delete this ${config.title}?`)) return;
 
-    stored.splice(index, 1);
-    saveStoredRecords(config, stored);
+    await API.deleteRecord(getPageKey(), id);
+    await fetchRecords();
 
-    if (editingIndex === index) {
+    if (editingId === id) {
         resetRecordForm(config);
-    } else if (editingIndex !== null && editingIndex > index) {
-        editingIndex -= 1;
     }
 
+    editingId = null;
     const previewSection = document.getElementById('record-preview-section');
     if (previewSection) previewSection.style.display = 'none';
     renderRecords(config);
@@ -527,8 +489,10 @@ function generatePdf(config, record, mode = 'print') {
             <title>${config.title}</title>
             <style>
                 * { box-sizing: border-box; }
-                body { font-family: Arial, sans-serif; color: #111; padding: 24px; }
-                .print-logo { width: 72px; height: 72px; margin: 0 auto 12px; display: grid; place-items: center; border-radius: 50%; border: 4px solid #e5e7eb; background: conic-gradient(#e64141 0 25%, #36b267 0 50%, #f0d44c 0 75%, #4b88d4 0); color: #fff; font-weight: 800; }
+                body { font-family: Arial, sans-serif; color: #111; padding: 24px; background: #f8f9ff; }
+                .print-logo { width: 72px; height: 72px; margin: 0 auto 12px; position: relative; display: grid; place-items: center; border-radius: 18px; background: #ffffff; border: 1px solid rgba(80,110,150,0.2); box-shadow: 0 10px 24px rgba(15,34,58,0.12); overflow: hidden; }
+                .print-logo::before { content: ''; position: absolute; inset: 12px; border-radius: 14px; background-image: linear-gradient(90deg, rgba(52,83,140,0.16) 0 18%, transparent 18% 36%, rgba(120,155,208,0.16) 36% 52%, transparent 52% 68%, rgba(57,88,142,0.16) 68% 84%, transparent 84% 100%), linear-gradient(180deg, rgba(120,155,208,0.14) 0 20%, transparent 20% 40%, rgba(52,83,140,0.12) 40% 58%, transparent 58% 78%, rgba(76,121,182,0.14) 78% 100%); background-size: 100% 100%; }
+                .print-logo span { position: relative; z-index: 1; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: #f8f9ff; color: #4f6c9d; font-weight: 800; font-size: 18px; }
                 h1 { font-size: 22px; text-align: center; margin-bottom: 24px; }
                 h2 { font-size: 16px; margin-bottom: 8px; }
                 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -544,7 +508,7 @@ function generatePdf(config, record, mode = 'print') {
             </style>
         </head>
         <body>
-            <div class="print-logo">MC</div>
+            <div class="print-logo"><span>MC</span></div>
             <h1>${escapeHtml(config.title)}</h1>
             <div class="details">
                 ${Object.keys(record).filter(key => key !== 'items' && key !== 'createdAt').map(key => `<div><strong>${formatLabel(key)}:</strong> ${formatValue(record[key])}</div>`).join('')}
@@ -642,7 +606,7 @@ function addHeaderLogo() {
     if (!header || header.querySelector('.form-logo')) return;
     const logo = document.createElement('div');
     logo.className = 'form-logo';
-    logo.textContent = 'MC';
+    logo.innerHTML = '<span>MC</span>';
     header.prepend(logo);
 }
 
@@ -651,7 +615,7 @@ function showAccessDenied(config) {
     if (!mainContent) return;
     mainContent.innerHTML = `
         <div class="dashboard-header">
-            <div class="form-logo">MC</div>
+            <div class="form-logo"><span>MC</span></div>
             <h1>${escapeHtml(config.title)}</h1>
         </div>
         <section>
@@ -664,14 +628,15 @@ function showAccessDenied(config) {
     `;
 }
 
-function initFormPage() {
-    const pageKey = document.body.dataset.page;
+async function initFormPage() {
+    const user = await requireAuth();
+    if (!user) return;
+
+    const pageKey = getPageKey();
     const config = getPageConfig(pageKey);
     if (!config) return;
 
-    applySidebarAccess();
-
-    if (!canAccessForm(pageKey)) {
+    if (!canAccessForm(user, pageKey)) {
         showAccessDenied(config);
         return;
     }
@@ -703,41 +668,41 @@ function initFormPage() {
             alert('Please add at least one line item.');
             return;
         }
-        const stored = getStoredRecords(config);
-        if (editingIndex !== null) {
-            stored[editingIndex] = {
-                ...stored[editingIndex],
-                ...formData,
-                items,
-                createdAt: stored[editingIndex].createdAt || new Date().toISOString()
-            };
-            editingIndex = null;
+
+        const payload = { ...formData, items };
+
+        if (editingId !== null) {
+            const existing = findRecordById(editingId);
+            await API.updateRecord(getPageKey(), editingId, {
+                ...payload,
+                createdAt: existing?.createdAt || new Date().toISOString()
+            });
+            editingId = null;
             alert(`${config.title} updated.`);
         } else {
-            stored.unshift({
-                ...formData,
-                items,
+            await API.createRecord(getPageKey(), {
+                ...payload,
                 createdAt: new Date().toISOString()
             });
             alert(`${config.title} saved.`);
         }
-        saveStoredRecords(config, stored);
+
         openDashboardPage();
     });
 
     document.getElementById('records-table').addEventListener('click', (event) => {
         const action = event.target.dataset.action;
-        const index = parseInt(event.target.dataset.index, 10);
-        if (!action || isNaN(index)) return;
+        const id = parseInt(event.target.dataset.id, 10);
+        if (!action || Number.isNaN(id)) return;
         if (action === 'view') {
-            renderRecordDetails(config, index);
+            renderRecordDetails(config, id);
         }
         if (action === 'edit') {
-            startEditRecord(config, index);
+            startEditRecord(config, id);
         }
         if (action === 'download' || action === 'print') {
-            const stored = getStoredRecords(config);
-            if (stored[index]) generatePdf(config, stored[index], action);
+            const record = findRecordById(id);
+            if (record) generatePdf(config, record, action);
         }
     });
 
@@ -753,16 +718,17 @@ function initFormPage() {
     });
 
     createRow(config);
+    await fetchRecords();
     renderRecords(config);
     updateTotals();
 
     if (isFormView()) {
         setDashboardVisible(false);
-        const editIndex = getEditIndexFromUrl();
-        if (editIndex !== null) {
-            const stored = getStoredRecords(config);
-            if (stored[editIndex]) {
-                showFormForEdit(stored[editIndex], config, editIndex);
+        const editId = getEditIdFromUrl();
+        if (editId !== null) {
+            const record = findRecordById(editId);
+            if (record) {
+                showFormForEdit(record, config, editId);
             } else {
                 openDashboardPage();
             }

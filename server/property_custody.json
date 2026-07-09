@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Administrator",
+      "email": "admin@supply.local",
+      "password_hash": "$2a$10$qs4LkN.zekhTiLsXGzWKm.cbNHzXw5MyZy81KCdqYfJlALvCHJjYG",
+      "role": "Admin",
+      "department": "Supply Office",
+      "allowedForms": [
+        "ris",
+        "ics",
+        "par",
+        "property-card",
+        "iar",
+        "ptr",
+        "prs"
+      ],
+      "createdAt": "2026-07-09T07:16:34.261Z",
+      "updatedAt": "2026-07-09T07:16:34.263Z"
+    }
+  ],
+  "records": []
+}

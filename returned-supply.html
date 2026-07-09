@@ -14,20 +14,21 @@
 </button>
 <div class="sidebar">
     <h2>Supply Office</h2>
-    <a href="index.html">🏠 Dashboard</a>
-    <a href="ris.html">📝 Requisition & Issue</a>
-    <a href="ics.html">📑 Inventory Custodian</a>
-    <a href="par.html">📘 Property Acknowledgement Receipt</a>
-    <a href="property-card.html">📁 Property Card</a>
-    <a href="iar.html">✅ Inspection & Acceptance Report</a>
-    <a href="ptr.html">🔁 Property Transfer Report</a>
-    <a href="prs.html">↩️ Property Return Slip</a>
-    <a href="returned-supply.html">🔄 Returned Supply</a>
-    <a href="user-management.html">👥 User Management</a>
+    <a href="index.html">Dashboard</a>
+    <a href="ris.html">Requisition & Issue</a>
+    <a href="ics.html">Inventory Custodian</a>
+    <a href="par.html">Property Acknowledgement Receipt</a>
+    <a href="property-card.html">Property Card</a>
+    <a href="iar.html">Inspection & Acceptance Report</a>
+    <a href="ptr.html">Property Transfer Report</a>
+    <a href="prs.html">Property Return Slip</a>
+    <a href="returned-supply.html">Returned Supply</a>
+    <a href="user-management.html">User Management</a>
+    <a href="login.html">Login</a>
 </div>
 <div class="main-content">
     <div class="dashboard-header">
-        <div class="form-logo">MC</div>
+        <div class="form-logo"><span>MC</span></div>
         <h1>Returned Supply</h1>
     </div>
     <section>
@@ -35,18 +36,16 @@
         <div id="returned-list" class="records-list"></div>
     </section>
 </div>
+<script src="js/api.js"></script>
+<script src="js/session.js"></script>
 <script src="js/navigation.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const user = await requireAuth();
+    if (!user) return;
+
     const returnedList = document.getElementById('returned-list');
-
-    function getPrsRecords() {
-        return JSON.parse(localStorage.getItem('prs_records') || '[]');
-    }
-
-    function savePrsRecords(records) {
-        localStorage.setItem('prs_records', JSON.stringify(records));
-    }
+    let prsRecords = [];
 
     function formatLabel(key) {
         return key.replace(/-/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
@@ -70,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderReturnedSupply() {
-        const prsRecords = getPrsRecords();
         returnedList.innerHTML = '';
 
         if (prsRecords.length === 0) {
@@ -78,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        prsRecords.forEach((record, index) => {
+        prsRecords.forEach(record => {
             const card = document.createElement('div');
             card.className = 'record-card';
             const title = `PRS - ${record['entity-name'] || 'No Entity'} - ${record.purpose || 'No Purpose'}`;
@@ -88,27 +86,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     <strong>${title}</strong>
                     <span>${createdAt}</span>
                 </div>
-                <div id="returned-details-${index}" style="display:none;">
+                <div id="returned-details-${record.id}" style="display:none;">
                     ${renderItemDetails(record)}
                 </div>
                 <div class="card-meta">
-                    <button type="button" data-action="view" data-index="${index}">View</button>
-                    <button type="button" data-action="delete" data-index="${index}" class="danger">Delete</button>
+                    <button type="button" data-action="view" data-id="${record.id}">View</button>
+                    <button type="button" data-action="delete" data-id="${record.id}" class="danger">Delete</button>
                 </div>
             `;
             returnedList.appendChild(card);
         });
     }
 
-    returnedList.addEventListener('click', (event) => {
+    returnedList.addEventListener('click', async (event) => {
         const button = event.target.closest('button');
         if (!button) return;
 
-        const index = parseInt(button.dataset.index, 10);
-        if (Number.isNaN(index)) return;
+        const id = parseInt(button.dataset.id, 10);
+        if (Number.isNaN(id)) return;
 
         if (button.dataset.action === 'view') {
-            const details = document.getElementById(`returned-details-${index}`);
+            const details = document.getElementById(`returned-details-${id}`);
             const isHidden = details.style.display === 'none';
             details.style.display = isHidden ? 'block' : 'none';
             button.textContent = isHidden ? 'Hide' : 'View';
@@ -116,13 +114,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (button.dataset.action === 'delete') {
             if (!confirm('Delete this returned supply record? This also removes the source PRS record.')) return;
-            const records = getPrsRecords();
-            records.splice(index, 1);
-            savePrsRecords(records);
+            await API.deleteRecord('prs', id);
+            const response = await API.getRecords('prs');
+            prsRecords = response.records;
             renderReturnedSupply();
         }
     });
 
+    const response = await API.getRecords('prs');
+    prsRecords = response.records;
     renderReturnedSupply();
 });
 </script>
