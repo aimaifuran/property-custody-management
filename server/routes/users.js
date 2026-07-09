@@ -26,6 +26,7 @@ router.post('/', (req, res) => {
     const password = String(req.body.password || '');
     const role = String(req.body.role || 'User').trim();
     const department = String(req.body.department || '').trim();
+    const status = String(req.body.status || 'approved').trim().toLowerCase();
     let allowedForms = Array.isArray(req.body.allowedForms) ? req.body.allowedForms : [];
 
     if (!name || !email || !password) {
@@ -54,6 +55,7 @@ router.post('/', (req, res) => {
         password_hash: hash,
         role,
         department,
+        status: status === 'pending' || status === 'rejected' ? status : 'approved',
         allowedForms
     });
 
@@ -71,6 +73,7 @@ router.put('/:id', (req, res) => {
     const email = String(req.body.email || existing.email).trim().toLowerCase();
     const role = String(req.body.role || existing.role).trim();
     const department = String(req.body.department || existing.department || '').trim();
+    const status = String(req.body.status || existing.status || 'pending').trim().toLowerCase();
     let allowedForms = Array.isArray(req.body.allowedForms)
         ? req.body.allowedForms
         : normalizeAllowedForms(existing.allowedForms || []);
@@ -96,6 +99,7 @@ router.put('/:id', (req, res) => {
         email,
         role,
         department,
+        status,
         allowedForms
     };
 

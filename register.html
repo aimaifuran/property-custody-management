@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Property Custody System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-body">
+    <main class="login-shell">
+        <section class="login-panel">
+            <div class="login-brand">
+                <div class="form-logo"><span>MC</span></div>
+                <div>
+                    <span>Municipality of Carigara</span>
+                    <h1>Visitor Registration</h1>
+                </div>
+            </div>
+
+            <form id="register-form" class="login-form">
+                <div class="login-heading">
+                    <h2>Create an account</h2>
+                    <p>Create a visitor account and request access from the administrator.</p>
+                </div>
+
+                <div>
+                    <label for="register-name">Full name</label>
+                    <input id="register-name" type="text" autocomplete="name" required>
+                </div>
+
+                <div>
+                    <label for="register-email">Email address</label>
+                    <input id="register-email" type="email" autocomplete="email" required>
+                </div>
+
+                <div>
+                    <label for="register-password">Password</label>
+                    <input id="register-password" type="password" autocomplete="new-password" required>
+                </div>
+
+                <div>
+                    <label for="register-confirm-password">Confirm password</label>
+                    <input id="register-confirm-password" type="password" autocomplete="new-password" required>
+                </div>
+
+                <button type="submit" class="login-submit">Create Account</button>
+                <p class="login-hint">Already have an account? <a href="login.html">Sign in</a></p>
+                <p id="register-message" class="login-message" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <aside class="login-info">
+            <div>
+                <span class="login-kicker">Visitor Access</span>
+                <h2>Register as a visitor to request form access.</h2>
+                <p>Admin will approve new accounts and assign forms as needed.</p>
+            </div>
+            <div class="login-stats">
+                <div><strong id="register-user-count">0</strong><span>Users</span></div>
+                <div><strong id="register-record-count">0</strong><span>Records</span></div>
+            </div>
+        </aside>
+    </main>
+    <script src="js/api.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>

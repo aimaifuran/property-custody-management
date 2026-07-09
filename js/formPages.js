@@ -117,6 +117,7 @@ function getPageConfig(pageKey) {
 
 let editingId = null;
 let cachedRecords = [];
+let searchQuery = '';
 
 function getPageKey() {
     return document.body.dataset.page;
@@ -313,13 +314,51 @@ function gatherTableRows(config) {
 }
 
 function renderRecords(config) {
-    renderRecordsTable(config);
+    const filteredRecords = getFilteredRecords(cachedRecords, searchQuery);
+    renderRecordsTable(config, filteredRecords);
     renderSummaryStats(config);
 }
 
-function renderRecordsTable(config) {
+function getFilteredRecords(records, query) {
+    const text = String(query || '').trim().toLowerCase();
+    if (!text) return records;
+
+    return records.filter(record => {
+        const recordValues = Object.entries(record)
+            .filter(([key]) => key !== 'items')
+            .map(([, value]) => String(value || ''))
+            .join(' ')
+            .toLowerCase();
+
+        const itemValues = (record.items || [])
+            .map(item => Object.values(item).join(' '))
+            .join(' ')
+            .toLowerCase();
+
+        return recordValues.includes(text) || itemValues.includes(text);
+    });
+}
+
+function addSearchInput(config) {
+    const panel = document.querySelector('.dashboard-panel');
+    if (!panel || document.getElementById('record-search')) return;
+
+    const row = document.createElement('div');
+    row.className = 'search-row';
+    row.innerHTML = `
+        <input id="record-search" type="search" placeholder="Search saved records..." value="${searchQuery}">
+    `;
+
+    panel.insertBefore(row, panel.querySelector('.dashboard-stats'));
+    document.getElementById('record-search').addEventListener('input', event => {
+        searchQuery = event.target.value || '';
+        renderRecords(config);
+    });
+}
+
+function renderRecordsTable(config, records = []) {
     const recordsTableBody = document.querySelector('#records-table tbody');
-    const stored = cachedRecords;
+    const stored = records;
     const dashboardFields = config.dashboardFields || config.summaryFields;
 
     if (!recordsTableBody) return;
@@ -650,6 +689,7 @@ async function initFormPage() {
     removeSignatureFields();
     populateRecordTableConfig();
     addCurrentFormPrintButton(config);
+    addSearchInput(config);
     hideRecordForm();
 
     document.getElementById('add-row').addEventListener('click', () => createRow(config));

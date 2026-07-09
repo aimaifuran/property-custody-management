@@ -18,6 +18,19 @@
       ],
       "createdAt": "2026-07-09T07:16:34.261Z",
       "updatedAt": "2026-07-09T07:16:34.263Z"
+    },
+    {
+      "id": 2,
+      "name": "User One",
+      "email": "userone@supply.local",
+      "password_hash": "$2a$10$gtmr8OA.2Q2vZTjXtid9FOK9bMjERCQkWnWvhibVDBR5Ebe2kYoEW",
+      "role": "User",
+      "department": "",
+      "allowedForms": [
+        "ris"
+      ],
+      "createdAt": "2026-07-09T09:37:24.222Z",
+      "updatedAt": "2026-07-09T09:39:03.674Z"
     }
   ],
   "records": []

@@ -46,6 +46,7 @@ function parseUser(row) {
         email: row.email,
         role: row.role,
         department: row.department || '',
+        status: row.status || 'approved',
         allowedForms: normalizeAllowedForms(row.allowedForms),
         createdAt: row.createdAt,
         updatedAt: row.updatedAt
@@ -115,6 +116,7 @@ function createUser(user) {
         password_hash: user.password_hash,
         role: user.role,
         department: user.department || '',
+        status: user.status || 'approved',
         allowedForms: normalizeAllowedForms(user.allowedForms),
         createdAt: now,
         updatedAt: now

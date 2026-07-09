@@ -57,6 +57,14 @@
                     </select>
                 </div>
                 <div>
+                    <label for="user-status">Status</label>
+                    <select id="user-status" required>
+                        <option value="approved">Approved</option>
+                        <option value="pending">Pending</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div>
                     <label for="user-department">Department</label>
                     <input id="user-department" type="text">
                 </div>
@@ -139,10 +147,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    function getStatusValue() {
+        return document.getElementById('user-status').value;
+    }
+
+    function setStatusValue(status) {
+        document.getElementById('user-status').value = status || 'approved';
+    }
+
     function resetUserForm() {
         userForm.reset();
         setSelectedForms([]);
         updateAccessByRole();
+        setStatusValue('approved');
         editingUserId = null;
         formTitle.textContent = 'Add New User';
         saveButton.textContent = 'Add User';
@@ -188,6 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         users.forEach(account => {
             const card = document.createElement('div');
             card.className = 'record-card';
+            const statusLabel = account.status === 'approved' ? 'Approved' : account.status === 'pending' ? 'Pending Approval' : 'Rejected';
             card.innerHTML = `
                 <div class="card-summary">
                     <strong>${account.name} (${account.role})</strong>
@@ -195,10 +213,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="record-details">
                     <strong>Department:</strong> ${account.department || '-'}<br>
+                    <strong>Status:</strong> ${statusLabel}<br>
                     <strong>Form Access:</strong> ${account.role === 'Admin' ? 'All forms' : (account.allowedForms || []).map(key => formOptions[key]?.label).filter(Boolean).join(', ') || 'No forms assigned'}
                 </div>
                 <div class="card-meta">
                     <button type="button" data-edit-id="${account.id}">Edit</button>
+                    ${account.status === 'pending' ? `<button type="button" data-approve-id="${account.id}">Approve</button><button type="button" data-review-id="${account.id}">Review</button><button type="button" class="secondary" data-reject-id="${account.id}">Reject</button>` : ''}
                     <button type="button" class="danger" data-delete-id="${account.id}">Delete</button>
                 </div>
             `;
@@ -217,6 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('user-name').value = account.name;
         document.getElementById('user-email').value = account.email;
         document.getElementById('user-role').value = account.role;
+        setStatusValue(account.status);
         document.getElementById('user-department').value = account.department || '';
         passwordInput.value = '';
         passwordInput.required = false;
@@ -235,6 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             name: document.getElementById('user-name').value.trim(),
             email: document.getElementById('user-email').value.trim(),
             role: document.getElementById('user-role').value,
+            status: getStatusValue(),
             department: document.getElementById('user-department').value.trim(),
             allowedForms: getSelectedForms()
         };
@@ -280,6 +302,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (editId) {
             window.location.href = `${window.location.pathname}?edit=${editId}`;
+        }
+
+        if (event.target.dataset.reviewId) {
+            window.location.href = `${window.location.pathname}?edit=${event.target.dataset.reviewId}`;
+        }
+
+        if (event.target.dataset.approveId) {
+            const approveId = Number(event.target.dataset.approveId);
+            if (!confirm('Approve this user request?')) return;
+            try {
+                await API.updateUser(approveId, { status: 'approved' });
+                await loadUsers();
+                alert('User request approved.');
+            } catch (error) {
+                alert(error.message || 'Unable to approve user.');
+            }
+            return;
+        }
+
+        if (event.target.dataset.rejectId) {
+            const rejectId = Number(event.target.dataset.rejectId);
+            if (!confirm('Reject this user request?')) return;
+            try {
+                await API.updateUser(rejectId, { status: 'rejected' });
+                await loadUsers();
+                alert('User request rejected.');
+            } catch (error) {
+                alert(error.message || 'Unable to reject user.');
+            }
+            return;
         }
 
         if (deleteId) {

@@ -47,6 +47,13 @@ const API = {
         });
     },
 
+    register(user) {
+        return this.request('/api/auth/register', {
+            method: 'POST',
+            body: JSON.stringify(user)
+        });
+    },
+
     logout() {
         return this.request('/api/auth/logout', { method: 'POST' });
     },
