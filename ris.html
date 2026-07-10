@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Requisition and Issue Slip</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Requisition and Issue Slip</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-page="ris">
-<button class="sidebar-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+  <!-- Sidebar toggle for mobile -->
+  <button class="sidebar-toggle" type="button" aria-label="Open menu" aria-expanded="false">
     <span></span>
     <span></span>
     <span></span>
-</button>
-<div class="sidebar">
+  </button>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
     <h2>Supply Office</h2>
     <a href="index.html">Dashboard</a>
     <a href="ris.html">Requisition & Issue</a>
@@ -21,138 +24,157 @@
     <a href="property-card.html">Property Card</a>
     <a href="iar.html">Inspection & Acceptance Report</a>
     <a href="ptr.html">Property Transfer Report</a>
-    <a href="prs.html">Property Return Slip</a>
+    <a href="prs.html">↩Property Return Slip</a>
     <a href="returned-supply.html">Returned Supply</a>
     <a href="user-management.html">User Management</a>
     <a href="login.html">Login</a>
-</div>
-<div class="main-content">
-    <div class="dashboard-header">
+  </div>
+
+  <!-- Main content container -->
+  <div class="main-content">
+    <div class="dashboard-container">
+      
+      <!-- Fixed header -->
+      <header class="dashboard-header">
+        <div class="form-logo">MC</div>
         <h1>Requisition and Issue Slip</h1>
-    </div>
-    <section class="slip-dashboard">
-        <div class="dashboard-panel">
+      </header>
+
+      <!-- Scrollable content -->
+      <div class="dashboard-content">
+        <section class="slip-dashboard">
+          <div class="dashboard-panel">
             <button type="button" id="create-new-record" class="secondary">Create New Slip</button>
             <div class="dashboard-stats">
-                <div class="stat-card"><span>Total Records</span><strong id="total-records">0</strong></div>
-                <div class="stat-card"><span>Recent Slip</span><strong id="recent-slip">-</strong></div>
-                <div class="stat-card"><span>Status</span><strong id="current-status">Ready</strong></div>
+              <div class="stat-card"><span>Total Records</span><strong id="total-records">0</strong></div>
+              <div class="stat-card"><span>Recent Slip</span><strong id="recent-slip">-</strong></div>
+              <div class="stat-card"><span>Status</span><strong id="current-status">Ready</strong></div>
             </div>
-        </div>
-        <div class="dashboard-table">
+          </div>
+          <div class="dashboard-table">
             <h3>Slip Dashboard</h3>
             <div class="table-wrapper">
-                <table id="records-table" class="dynamic-table">
-                    <thead></thead>
-                    <tbody></tbody>
-                </table>
+              <table id="records-table" class="dynamic-table">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
             </div>
-        </div>
-    </section>
-    <section id="record-preview-section" class="record-preview" style="display:none;">
-        <h3>Document Preview</h3>
-        <div id="record-preview"></div>
-    </section>
-    <section>
-        <form id="record-form">
+          </div>
+        </section>
+
+        <section id="record-preview-section" class="record-preview" style="display:none;">
+          <h3>Document Preview</h3>
+          <div id="record-preview"></div>
+        </section>
+
+        <section>
+          <form id="record-form">
             <div class="form-grid">
-                <div>
-                    <label for="entity-name">Entity Name</label>
-                    <input id="entity-name" type="text" required>
-                </div>
-                <div>
-                    <label for="fund-cluster">Fund Cluster</label>
-                    <input id="fund-cluster" type="text">
-                </div>
-                <div>
-                    <label for="division">Division</label>
-                    <input id="division" type="text">
-                </div>
-                <div>
-                    <label for="office">Office</label>
-                    <input id="office" type="text">
-                </div>
-                <div>
-                    <label for="responsibility-center-code">Responsibility Center Code</label>
-                    <input id="responsibility-center-code" type="text">
-                </div>
-                <div>
-                    <label for="ris-no">RIS No.</label>
-                    <input id="ris-no" type="text" required>
-                </div>
-                <div>
-                    <label for="date">Date</label>
-                    <input id="date" type="date">
-                </div>
+              <div>
+                <label for="entity-name">Entity Name</label>
+                <input id="entity-name" type="text" required>
+              </div>
+              <div>
+                <label for="fund-cluster">Fund Cluster</label>
+                <input id="fund-cluster" type="text">
+              </div>
+              <div>
+                <label for="division">Division</label>
+                <input id="division" type="text">
+              </div>
+              <div>
+                <label for="office">Office</label>
+                <input id="office" type="text">
+              </div>
+              <div>
+                <label for="responsibility-center-code">Responsibility Center Code</label>
+                <input id="responsibility-center-code" type="text">
+              </div>
+              <div>
+                <label for="ris-no">RIS No.</label>
+                <input id="ris-no" type="text" required>
+              </div>
+              <div>
+                <label for="date">Date</label>
+                <input id="date" type="date">
+              </div>
             </div>
+
             <h3>Item Details</h3>
             <button type="button" id="add-row" class="secondary">Add Row</button>
             <div class="table-wrapper">
-                <table id="detail-table" class="dynamic-table">
-                    <thead>
-                        <tr>
-                            <th>Stock No.</th>
-                            <th>Unit</th>
-                            <th>Description</th>
-                            <th>Quantity Requested</th>
-                            <th>Stock Available?</th>
-                            <th>Quantity Issued</th>
-                            <th>Remarks</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+              <table id="detail-table" class="dynamic-table">
+                <thead>
+                  <tr>
+                    <th>Stock No.</th>
+                    <th>Unit</th>
+                    <th>Description</th>
+                    <th>Quantity Requested</th>
+                    <th>Stock Available?</th>
+                    <th>Quantity Issued</th>
+                    <th>Remarks</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
             </div>
+
             <div class="form-grid">
-                <div>
-                    <label for="purpose">Purpose</label>
-                    <input id="purpose" type="text">
-                </div>
+              <div>
+                <label for="purpose">Purpose</label>
+                <input id="purpose" type="text">
+              </div>
             </div>
+
             <h3>Requested by</h3>
             <div class="form-grid">
-                <div>
-                    <label for="requested-by-signature">Signature</label>
-                    <input id="requested-by-signature" type="text">
-                </div>
-                <div>
-                    <label for="requested-by-name">Printed Name</label>
-                    <input id="requested-by-name" type="text">
-                </div>
-                <div>
-                    <label for="requested-by-designation">Designation</label>
-                    <input id="requested-by-designation" type="text">
-                </div>
-                <div>
-                    <label for="requested-by-date">Date</label>
-                    <input id="requested-by-date" type="date">
-                </div>
+              <div>
+                <label for="requested-by-signature">Signature</label>
+                <input id="requested-by-signature" type="text">
+              </div>
+              <div>
+                <label for="requested-by-name">Printed Name</label>
+                <input id="requested-by-name" type="text">
+              </div>
+              <div>
+                <label for="requested-by-designation">Designation</label>
+                <input id="requested-by-designation" type="text">
+              </div>
+              <div>
+                <label for="requested-by-date">Date</label>
+                <input id="requested-by-date" type="date">
+              </div>
             </div>
+
             <div class="form-grid">
-                <div>
-                    <label for="approved-by">Approved by</label>
-                    <input id="approved-by" type="text">
-                </div>
-                <div>
-                    <label for="issued-by">Issued by</label>
-                    <input id="issued-by" type="text">
-                </div>
-                <div>
-                    <label for="received-by">Received by</label>
-                    <input id="received-by" type="text">
-                </div>
+              <div>
+                <label for="approved-by">Approved by</label>
+                <input id="approved-by" type="text">
+              </div>
+              <div>
+                <label for="issued-by">Issued by</label>
+                <input id="issued-by" type="text">
+              </div>
+              <div>
+                <label for="received-by">Received by</label>
+                <input id="received-by" type="text">
+              </div>
             </div>
+
             <div class="button-row">
-                <button type="submit">Save RIS</button>
-                <button type="button" id="clear-form">Clear Form</button>
+              <button type="submit">Save RIS</button>
+              <button type="button" id="clear-form">Clear Form</button>
             </div>
-        </form>
-    </section>
-</div>
-<script src="js/api.js"></script>
-<script src="js/session.js"></script>
-<script src="js/formPages.js"></script>
-<script src="js/navigation.js"></script>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/formPages.js"></script>
+  <script src="js/navigation.js"></script>
 </body>
-</html>
+</html

@@ -31,7 +31,50 @@
       ],
       "createdAt": "2026-07-09T09:37:24.222Z",
       "updatedAt": "2026-07-09T09:39:03.674Z"
+    },
+    {
+      "id": 3,
+      "name": "Cherie Mae Francisco",
+      "email": "franciscocherie4@gmail.com",
+      "password_hash": "$2a$10$4SZPbn0U8F8D82u261W8weg7pKnE3N5qO8esK7MryasEsTmtaZSii",
+      "role": "User",
+      "department": "",
+      "status": "pending",
+      "allowedForms": [],
+      "createdAt": "2026-07-10T04:10:17.497Z",
+      "updatedAt": "2026-07-10T04:10:17.497Z"
     }
   ],
-  "records": []
+  "records": [
+    {
+      "id": 1,
+      "formType": "ics",
+      "data": {
+        "ics-no": "3570124",
+        "entity-name": "skjdjsjnfvds",
+        "fund-cluster": "386985710",
+        "remarks": "",
+        "received-from-name": "",
+        "received-from-position": "",
+        "received-from-date": "",
+        "received-by-name": "",
+        "received-by-position": "",
+        "received-by-date": "",
+        "items": [
+          {
+            "quantity": "",
+            "unit": "",
+            "unit-cost": "",
+            "amount": "0.00",
+            "description": "",
+            "inventory-item-no": "",
+            "estimated-useful-life": ""
+          }
+        ],
+        "createdAt": "2026-07-10T06:26:00.709Z"
+      },
+      "createdAt": "2026-07-10T06:26:00.741Z",
+      "updatedAt": "2026-07-10T06:26:00.741Z"
+    }
+  ]
 }
