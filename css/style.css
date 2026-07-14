@@ -11,31 +11,38 @@ html {
 }
 
 :root {
-    --page-bg: #e9ebf5;
-    --workspace: #dfe2ee;
-    --panel: #aeb5cc;
-    --panel-dark: #9fa8c3;
-    --sidebar: #7f9fd0;
-    --sidebar-dark: #6f8fc0;
-    --button: #cfd9ee;
-    --button-hover: #e7edf8;
-    --primary: #789bd0;
-    --primary-dark: #5f7fb5;
-    --text: #121722;
-    --muted: #576070;
-    --line: #7f8799;
-    --white: #f8f9ff;
+    /* Elegant Burgundy & Beige Gradient Palette */
+    --page-bg: #fbf1e6;               /* warm beige */
+    --workspace: #f7e6cd;
+    --panel: #f3d9b8;                /* beige panel */
+    --panel-dark: #ead0aa;
+
+    --sidebar: #59171b;              /* burgundy */
+    --sidebar-dark: #3f0f12;
+
+    --button: #fed7b8;              /* beige buttons */
+    --button-hover: #f5caa0;
+
+    --primary: #59171b;
+    --primary-dark: #3f0f12;
+
+    --text: #1f1516;
+    --muted: #5a4749;
+    --line: rgba(89, 23, 27, 0.25);
+    --white: #fffaf3;
     --danger: #b8404a;
+
     --sidebar-width: min(270px, calc(100vw - 32px));
     --sidebar-left: 38px;
 }
+
 
 body {
     width: 100%;
     min-height: 100vh;
     display: flex;
-    background: radial-gradient(circle at top left, rgba(59, 88, 172, 0.12), transparent 25%),
-        linear-gradient(180deg, #f2f5fb 0%, #e9edf6 100%);
+background: radial-gradient(circle at top left, rgba(89, 23, 27, 0.14), transparent 25%),
+        linear-gradient(180deg, #fff7e9 0%, #fbf1e6 100%);
     color: var(--text);
     overflow-x: hidden;
 }
@@ -387,8 +394,8 @@ button#clear-form::before {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     border-radius: 5px;
     background: #ffffff;
     border: 1px solid rgba(0,0,0,0.08);
@@ -928,8 +935,8 @@ button#clear-form::before {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     border-radius: 5px;
     background: #ffffff;
     border: 1px solid rgba(0,0,0,0.08);

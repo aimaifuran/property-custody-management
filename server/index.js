@@ -17,6 +17,12 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'property-custody-session-secret',
     resave: false,
     saveUninitialized: false,
+
+    // Allow concurrent logins across multiple devices/browsers.
+    // express-session uses the session cookie, so each browser/device will
+    // have its own cookie/session and will not force-logout others.
+    rolling: true,
+
     cookie: {
         httpOnly: true,
         sameSite: 'lax',
